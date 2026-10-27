@@ -35,8 +35,8 @@ def init():
             payload TEXT NOT NULL
         )""")
 def record(data: CaptureInput):
-    text=data.text.strip()
-    if not text: raise ValueError("empty capture")
+    text=data.text
+    if not text.strip(): raise ValueError("empty capture")
     now=db.now()
     value={"id":str(uuid.uuid4()),"original_text":text,"kind":data.kind,
            "source":data.source,"status":"inbox","created_at":now,"updated_at":now}
