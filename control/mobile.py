@@ -154,3 +154,40 @@ def worker():
 @router.get("/assets/control-icon.svg")
 def icon():
     return FileResponse(ASSETS/"control-icon.svg",media_type="image/svg+xml")
+
+# Raster icons make Android's PWA installer more reliable than SVG-only icons.
+from functools import lru_cache
+import math
+import struct
+import zlib
+
+def _png_chunk(name:bytes,data:bytes)->bytes:
+    return struct.pack(">I",len(data))+name+data+struct.pack(">I",zlib.crc32(name+data)&0xffffffff)
+
+@lru_cache(maxsize=2)
+def _icon_png(size:int)->bytes:
+    rows=[]
+    for y in range(size):
+        line=bytearray(b"\\x00")
+        for x in range(size):
+            px=(x+0.5)/size
+            py=(y+0.5)/size
+            # Solid midnight background; draw a simple high-contrast letter C.
+            color=(16,20,27,255)
+            dx=px-.50;dy=py-.50
+            radius=math.hypot(dx,dy)
+            angle=math.atan2(dy,dx)
+            if 0.24<radius<0.32 and abs(angle)>0.63:
+                color=(154,186,255,255)
+            if (px-.76)**2+(py-.25)**2<0.036**2:
+                color=(165,229,206,255)
+            line.extend(color)
+        rows.append(bytes(line))
+    pixels=zlib.compress(b"".join(rows),level=9)
+    header=struct.pack(">IIBBBBB",size,size,8,6,0,0,0)
+    return b"\\x89PNG\\r\\n\\x1a\\n"+_png_chunk(b"IHDR",header)+_png_chunk(b"IDAT",pixels)+_png_chunk(b"IEND",b"")
+
+@router.get("/assets/icon-{size}.png")
+def png_icon(size:int):
+    if size not in (192,512):raise HTTPException(404,"Icon not found")
+    return Response(content=_icon_png(size),media_type="image/png",headers={"Cache-Control":"public,max-age=604800"})
