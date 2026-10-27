@@ -72,4 +72,24 @@ class ControlMobileSmokeTests(unittest.TestCase):
         self.assertEqual(completed.status_code,200,completed.text)
         self.assertEqual(completed.json()["status"],"done")
 
+    def test_move_task_to_thought_preserves_history(self):
+        self.unlock()
+        r=self.client.post("/mobile/tasks",headers=self.browser_headers,
+            json={"title":"Remember to call a friend","priority":"low"})
+        self.assertEqual(r.status_code,201,r.text)
+        task=r.json()
+        moved=self.client.post("/mobile/tasks/"+task["id"]+"/move-to-thought",
+            headers=self.browser_headers,json={})
+        self.assertEqual(moved.status_code,200,moved.text)
+        self.assertEqual(moved.json()["original_text"],task["title"])
+        self.assertEqual(moved.json()["source"],"converted_from_task")
+        self.assertEqual(self.client.get("/mobile/tasks").json(),[])
+        self.assertEqual(self.client.get("/mobile/inbox").json()[0]["original_text"],task["title"])
+        exports=self.client.get("/api/export/all",headers={"X-Control-Key":"x"*48}).json()
+        original=next(x for x in exports["tasks"]["tasks"] if x["id"]==task["id"])
+        self.assertEqual(original["status"],"converted")
+        self.assertIsNone(original["completed_at"])
+        self.assertTrue(any(e["event"]=="converted_from_task" for e in exports["inbox"]["events"]))
+
+
 if __name__=="__main__":unittest.main()
