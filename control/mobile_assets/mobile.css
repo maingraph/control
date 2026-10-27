@@ -32,3 +32,15 @@ textarea,input,select{background:#111722;color:var(--fg);border:1px solid #39415
 .item .actions .secondary{font-size:11px;color:var(--primary);border-color:#354d72}
 .item .actions button{white-space:nowrap}
 @media(max-width:520px){.item .actions button{font-size:11px;padding:8px 7px}}
+
+.memory-panel{margin-top:16px}
+.memory-search{margin-top:17px}
+.search-row{display:flex;align-items:stretch;gap:9px}
+.search-row input{min-width:0;flex:1}
+.search-row .primary{min-width:100px}
+.memory-review-head{margin:25px 0 0;border-top:1px solid var(--line);padding-top:22px}
+.memory-panel .itemlist{max-height:450px}
+.memory-panel .item .text p{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.memory-panel .micro{font-size:12px;color:var(--muted)}
+.memory-panel .link-item{background:#17212d}
+@media(max-width:480px){.search-row{flex-direction:column}.search-row .primary{width:100%}}
