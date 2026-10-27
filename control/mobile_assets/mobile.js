@@ -82,9 +82,16 @@ $("capture-form").addEventListener("submit",async event=>{
   else {
     const first=(raw.split("\n").find(line=>line.trim())||"").trim();
     const title=first.slice(0,200);
-    await request("/mobile/tasks",{method:"POST",body:JSON.stringify({title,notes:raw===first?"":raw,priority:$("priority").value,project:$("project").value.trim()||null})});
+    const rawDeadline=$("due").value;
+    let due_at=null;
+    if(rawDeadline){
+     const localTime=$("due-zone").value==="moscow"?new Date(rawDeadline+":00+03:00"):new Date(rawDeadline);
+     if(Number.isNaN(localTime.getTime()))throw Error("Check the deadline date and time.");
+     due_at=localTime.toISOString();
+    }
+    await request("/mobile/tasks",{method:"POST",body:JSON.stringify({title,notes:raw===first?"":raw,priority:$("priority").value,project:$("project").value.trim()||null,due_at})});
   }
-  $("draft").value="";setMessage(mode==="thought"?"✓ Saved as THOUGHT. Look for it in Thought inbox →":"✓ Saved as TASK. It appears in Open tasks below.");
+  $("draft").value="";if(mode==="task")$("due").value="";setMessage(mode==="thought"?"✓ Saved as THOUGHT. Look for it in Thought inbox →":"✓ Saved as TASK. It appears in Open tasks below.");
   await refresh();$("draft").focus();
  }catch(e){setMessage("Not saved: "+e.message,true);}
  finally{saving=false;$("save").disabled=false;}
