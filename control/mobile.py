@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
-from . import db, inbox
+from . import db, inbox, memory
 from .models import TaskCreate,TaskPatch
 
 router=APIRouter()
@@ -129,6 +129,31 @@ def review(capture_id:str,body:inbox.CaptureStatus):
     result=inbox.update_status(capture_id,body.status)
     if result is None:raise HTTPException(404,"Capture not found")
     return result
+
+
+class MemorySearch(BaseModel):
+    query:str=Field(min_length=1,max_length=1000)
+    limit:int=Field(default=8,ge=1,le=20)
+
+@router.get("/mobile/memory/status",dependencies=[Depends(authorized)])
+def memory_health():return memory.status()
+
+@router.post("/mobile/memory/search",dependencies=[Depends(authorized)])
+def search_memory(body:MemorySearch):
+    return memory.search(body.query,body.limit)
+
+@router.post("/mobile/memory/suggest/{node_id}",dependencies=[Depends(authorized)])
+def propose_related(node_id:str):
+    try:return memory.related(node_id,limit=5,threshold=0.42,propose=True)
+    except ValueError as exc:raise HTTPException(404,str(exc))
+
+@router.get("/mobile/memory/links",dependencies=[Depends(authorized)])
+def pending_links():
+    return {"links":memory.links("suggested"),"nodes":memory.get_nodes(500)}
+
+@router.patch("/mobile/memory/links/{link_id}",dependencies=[Depends(authorized)])
+def review_link(link_id:str,body:memory.LinkDecision):
+    return memory.decide_link(link_id,body) or (_ for _ in ()).throw(HTTPException(404,"Link not found"))
 
 @router.get("/mobile/context",dependencies=[Depends(authorized)])
 def planning_context():
