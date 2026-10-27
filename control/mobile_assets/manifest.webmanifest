@@ -1,0 +1,16 @@
+{
+ "id":"/app",
+ "name":"Control — Quick Capture",
+ "short_name":"Control",
+ "description":"Private task and thought inbox for Control.",
+ "start_url":"/app",
+ "scope":"/",
+ "display":"standalone",
+ "background_color":"#10141b",
+ "theme_color":"#10141b",
+ "icons":[{"src":"/assets/control-icon.svg","type":"image/svg+xml","sizes":"any","purpose":"any maskable"}],
+ "shortcuts":[
+ {"name":"Capture thought","short_name":"Thought","description":"Open the raw thought inbox","url":"/app?mode=thought","icons":[{"src":"/assets/control-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+ {"name":"New task","short_name":"Task","description":"Capture a task in Control","url":"/app?mode=task","icons":[{"src":"/assets/control-icon.svg","sizes":"any","type":"image/svg+xml"}]}
+ ]
+}
