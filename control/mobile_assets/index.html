@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10141b"><meta name="color-scheme" content="dark">
+<meta name="description" content="A private inbox for thoughts and tasks.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/assets/control-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/mobile.css">
+<title>Control · Quick Capture</title></head>
+<body>
+<div class="shell">
+<header><div class="brand"><span class="brandmark">C</span><div><strong>CONTROL</strong><small>Capture first. Organize later.</small></div></div><button type="button" id="lock" class="textbtn hidden">Lock</button></header>
+<main>
+<section id="locked" class="centered hidden"><div class="panel">
+<div class="hero-emoji" aria-hidden="true">✦</div><h1>Your mind, organized.</h1><p>Unlock your private Control inbox. Your access key stays out of browser storage; a secure session cookie keeps you signed in.</p>
+<form id="unlock-form"><label for="access">Railway Control access key</label><input id="access" type="password" required autocomplete="off" placeholder="Paste CONTROL_API_KEY"><button class="primary" type="submit">Unlock Control</button></form>
+<p class="micro">Find the key in Railway → control-api → Variables. Only enter it on your own Control domain.</p>
+<p class="error" id="login-error" role="alert"></p>
+</div></section>
+<section id="workspace" class="hidden">
+<div class="intro"><div><p class="eyebrow">QUICK CAPTURE</p><h1>Get it out of your head.</h1><p class="sub">No perfect structure needed. Save now, think later.</p></div><a class="chat" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="Open ChatGPT in new tab">ChatGPT ↗</a></div>
+<div class="layout"><section class="composer panel">
+<div class="tabs" role="tablist" aria-label="Capture type"><button type="button" id="thought-tab" class="active" aria-selected="true">✦ Thought</button><button type="button" id="task-tab" aria-selected="false">☐ Task</button></div>
+<form id="capture-form">
+<label id="draft-label" for="draft">What’s on your mind?</label>
+<textarea id="draft" maxlength="20000" rows="7" placeholder="Anything. An idea, worry, question, memory, something you've been avoiding…" required autofocus></textarea>
+<div id="task-fields" class="hidden"><label for="project">Project (optional)</label><input id="project" maxlength="120" placeholder="e.g. Job Search"><label for="priority">Priority</label><select id="priority"><option value="medium">Normal</option><option value="low">Low</option><option value="high">High</option></select></div>
+<div class="composer-foot"><span id="save-hint">Saved to your raw inbox, unchanged.</span><button class="primary" id="save" type="submit">Save thought <span aria-hidden="true">↗</span></button></div>
+</form>
+<p id="message" class="notice" role="status"></p></section>
+<aside class="panel inbox-panel"><div class="aside-head"><div><p class="eyebrow">REVIEW WHEN READY</p><h2>Thought inbox <span id="inbox-count"></span></h2></div><button type="button" id="refresh" class="textbtn">Refresh</button></div>
+<div id="inbox-list" class="itemlist"><p class="empty">Loading your inbox…</p></div></aside></div>
+<section class="panel tasks-panel"><div class="aside-head"><div><p class="eyebrow">WHAT MATTERS NEXT</p><h2>Open tasks <span id="task-count"></span></h2></div><button type="button" id="copy-digest" class="textbtn">Ask ChatGPT to digest</button></div><div id="task-list" class="itemlist"><p class="empty">Loading tasks…</p></div></section>
+<div class="footer-note">Original thoughts are kept separately from tasks. Capturing requires an internet connection. <a href="https://github.com/maingraph/control" target="_blank" rel="noopener noreferrer">About Control</a></div>
+</section></main></div>
+<script src="/assets/mobile.js" defer></script>
+</body></html>
