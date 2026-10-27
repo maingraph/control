@@ -10,6 +10,8 @@ class ContextValue(BaseModel):
 class MemoryQuery(BaseModel):
     query: str
     limit: int = 8
+class KnowledgeDecision(BaseModel):
+    status: str
 from .models import TaskCreate,TaskPatch
 def create_app(lifespan=None):
     app=FastAPI(title="Control",lifespan=lifespan)
@@ -72,6 +74,10 @@ def create_app(lifespan=None):
     def create_knowledge(body:memory.KnowledgeInput):
         try:return memory.add_knowledge(body)
         except ValueError as exc:raise HTTPException(422,str(exc))
+    @app.patch("/api/memory/knowledge/{node_id}")
+    def review_knowledge(node_id:str,body:KnowledgeDecision):
+        try:return memory.decide_knowledge(node_id,body.status) or (_ for _ in ()).throw(HTTPException(404,"Knowledge not found"))
+        except ValueError as exc:raise HTTPException(422,str(exc))
     @app.get("/api/memory/links")
     def memory_links(status:str="all"):
         try:return memory.links(status)
@@ -93,7 +99,7 @@ def create_app(lifespan=None):
         except ValueError as exc:raise HTTPException(404,str(exc))
     @app.get("/api/export/all")
     def export_all():
-        return {"format":"control.full_export.v2","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")}}
+        return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")}}
     app.include_router(mobile_router)
     return app
 app=create_app()
