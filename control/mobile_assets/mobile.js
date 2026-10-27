@@ -30,7 +30,7 @@ function selectMode(next){
  setMessage("");
  const url=new URL(location.href);url.searchParams.set("mode",next);history.replaceState(null,"",url.pathname+url.search);
 }
-function itemNode(text,meta,actionLabel,action){
+function itemNode(text,meta,actionLabel,action,secondaryLabel=null,secondaryAction=null){
  const row=document.createElement("div");row.className="item";
  const content=document.createElement("div");content.className="text";
  const body=document.createElement("p");body.textContent=text;
@@ -39,7 +39,14 @@ function itemNode(text,meta,actionLabel,action){
   button.disabled=true;
   try{await action();await refresh();}catch(e){setMessage(e.message,true);button.disabled=false;}
  });
- content.append(body,details);row.append(content,button);return row;
+ const actions=document.createElement('div');actions.className='actions';actions.append(button);
+ if(secondaryLabel&&secondaryAction){const secondary=document.createElement('button');secondary.type='button';secondary.className='secondary';secondary.textContent=secondaryLabel;secondary.addEventListener('click',async()=>{
+  if(!confirm('Move this task into the thought inbox? The original task will remain in history as converted, not completed.'))return;
+  secondary.disabled=true;
+  try{await secondaryAction();setMessage('Moved to your thought inbox with its original wording.');await refresh();}
+  catch(e){setMessage(e.message,true);secondary.disabled=false;}
+ });actions.append(secondary);}
+ content.append(body,details);row.append(content,actions);return row;
 }
 async function refresh(){
  try{
@@ -50,7 +57,7 @@ async function refresh(){
   inbox.forEach(x=>$("inbox-list").append(itemNode(x.original_text,(x.kind||"thought")+" · "+ago(x.created_at),"Reviewed",()=>request("/mobile/inbox/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"reviewed"})}))));
   $("task-list").replaceChildren();
   if(!tasks.length){const p=document.createElement("p");p.className="empty";p.textContent="No open tasks yet."; $("task-list").append(p);}
-  tasks.forEach(x=>$("task-list").append(itemNode(x.title,[x.project||"Unsorted",x.priority||"medium",x.due_at?"Due "+ago(x.due_at):"No deadline"].join(" · "),"Done",()=>request("/mobile/tasks/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"done"})}))));
+  tasks.forEach(x=>$("task-list").append(itemNode(x.title,[x.project||"Unsorted",x.priority||"medium",x.due_at?"Due "+ago(x.due_at):"No deadline"].join(" · "),"Done",()=>request("/mobile/tasks/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"done"})}),"Move to thoughts",()=>request("/mobile/tasks/"+encodeURIComponent(x.id)+"/move-to-thought",{method:"POST",body:"{}"}))));
  }catch(e){setMessage("Couldn't refresh: "+e.message,true);}
 }
 $("thought-tab").addEventListener("click",()=>selectMode("thought"));
@@ -77,7 +84,7 @@ $("capture-form").addEventListener("submit",async event=>{
     const title=first.slice(0,200);
     await request("/mobile/tasks",{method:"POST",body:JSON.stringify({title,notes:raw===first?"":raw,priority:$("priority").value,project:$("project").value.trim()||null})});
   }
-  $("draft").value="";setMessage(mode==="thought"?"Thought saved in your private inbox.":"Task saved in Control.");
+  $("draft").value="";setMessage(mode==="thought"?"✓ Saved as THOUGHT. Look for it in Thought inbox →":"✓ Saved as TASK. It appears in Open tasks below.");
   await refresh();$("draft").focus();
  }catch(e){setMessage("Not saved: "+e.message,true);}
  finally{saving=false;$("save").disabled=false;}
