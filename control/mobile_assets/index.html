@@ -24,7 +24,7 @@
 <form id="capture-form">
 <label id="draft-label" for="draft">What’s on your mind?</label>
 <textarea id="draft" maxlength="20000" rows="7" placeholder="Anything. An idea, worry, question, memory, something you've been avoiding…" required autofocus></textarea>
-<div id="task-fields" class="hidden"><label for="project">Project (optional)</label><input id="project" maxlength="120" placeholder="e.g. Job Search"><label for="priority">Priority</label><select id="priority"><option value="medium">Normal</option><option value="low">Low</option><option value="high">High</option></select></div>
+<div id="task-fields" class="hidden"><label for="project">Project (optional)</label><input id="project" maxlength="120" placeholder="e.g. Job Search"><label for="priority">Priority</label><select id="priority"><option value="medium">Normal</option><option value="low">Low</option><option value="high">High</option></select><label for="due">Exact deadline (optional)</label><input type="datetime-local" id="due"><label for="due-zone">Deadline timezone</label><select id="due-zone"><option value="device">Phone / browser timezone</option><option value="moscow">Moscow (UTC+3)</option></select><p class="micro">Mentioning a time in a task title does not automatically schedule a reminder.</p></div>
 <div class="composer-foot"><span id="save-hint">Saved to your raw inbox, unchanged.</span><button class="primary" id="save" type="submit">Save thought <span aria-hidden="true">↗</span></button></div>
 </form>
 <p id="message" class="notice" role="status"></p></section>
