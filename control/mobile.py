@@ -107,6 +107,14 @@ def modify_task(task_id:str,body:TaskPatch):
     if result is None:raise HTTPException(404,"Task not found")
     return result
 
+@router.post("/mobile/tasks/{task_id}/move-to-thought",dependencies=[Depends(authorized)])
+def move_to_thought(task_id:str):
+    try:
+        result=inbox.convert_task_to_thought(task_id)
+        if result is None:raise HTTPException(404,"Task not found")
+        return result
+    except ValueError as exc:raise HTTPException(409,str(exc))
+
 @router.get("/mobile/inbox",dependencies=[Depends(authorized)])
 def captures():
     return inbox.listing("inbox",100)
