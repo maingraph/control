@@ -3,7 +3,8 @@ import os
 import tempfile
 import unittest
 from fastapi.testclient import TestClient
-from control import db, inbox, context
+from control import db, inbox, context, memory
+from unittest.mock import patch
 from control.api import create_app
 
 class ControlMobileSmokeTests(unittest.TestCase):
@@ -18,6 +19,7 @@ class ControlMobileSmokeTests(unittest.TestCase):
         db.init()
         context.ensure()
         inbox.init()
+        memory.init()
         self.client=TestClient(create_app(),base_url="https://testserver")
         self.browser_headers={"Origin":"https://testserver","X-Control-Mobile":"1"}
     def tearDown(self):
@@ -91,5 +93,32 @@ class ControlMobileSmokeTests(unittest.TestCase):
         self.assertIsNone(original["completed_at"])
         self.assertTrue(any(e["event"]=="converted_from_task" for e in exports["inbox"]["events"]))
 
+
+
+    def test_mobile_semantic_search_and_link_review(self):
+        self.unlock()
+        first=self.client.post("/mobile/capture",headers=self.browser_headers,
+            json={"text":"I keep delaying job applications"}).json()
+        second=self.client.post("/mobile/capture",headers=self.browser_headers,
+            json={"text":"Applying for work is hard"}).json()
+        def fake_embed(texts):
+            return [[1.0,0.0,0.0] for _ in texts]
+        with patch.object(memory,"embed",side_effect=fake_embed):
+            result=self.client.post("/mobile/memory/search",headers=self.browser_headers,
+                json={"query":"Why do I postpone applying for jobs?","limit":6})
+            self.assertEqual(result.status_code,200,result.text)
+            self.assertEqual(result.json()["index"]["remaining"],0)
+            self.assertGreaterEqual(len(result.json()["matches"]),2)
+            proposed=self.client.post("/mobile/memory/suggest/"+first["id"].join(("capture:","")),
+                headers=self.browser_headers,json={})
+            self.assertEqual(proposed.status_code,200,proposed.text)
+            pending=self.client.get("/mobile/memory/links")
+            self.assertEqual(pending.status_code,200,pending.text)
+            links=pending.json()["links"]
+            self.assertTrue(links)
+            confirmed=self.client.patch("/mobile/memory/links/"+links[0]["id"],
+                headers=self.browser_headers,json={"status":"confirmed"})
+            self.assertEqual(confirmed.status_code,200,confirmed.text)
+            self.assertEqual(confirmed.json()["status"],"confirmed")
 
 if __name__=="__main__":unittest.main()
