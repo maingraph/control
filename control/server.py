@@ -54,6 +54,10 @@ def create_control_knowledge(kind:str,statement:str,source_node_id:str|None=None
     """Record a DRAFT interpretation or decision, linked to source evidence if known; do not silently claim user confirmation."""
     return memory.add_knowledge(memory.KnowledgeInput(kind=kind,statement=statement,source_node_id=source_node_id,evidence=evidence))
 @mcp.tool()
+def decide_control_knowledge(node_id:str,status:str)->dict:
+    """Confirm or reject a draft interpretation only after the user explicitly approves this action."""
+    return memory.decide_knowledge(node_id,status) or {"error":"not found"}
+@mcp.tool()
 def get_control_related_memory(node_id:str,limit:int=5,threshold:float=0.35,propose:bool=False)->dict:
     """Find meaningfully similar memories; proposed relationships are unconfirmed until user reviews."""
     return memory.related(node_id,limit,threshold,propose)
