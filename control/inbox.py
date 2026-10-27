@@ -65,3 +65,27 @@ def export():
     with db.connect() as c:
         return {"format":"control.inbox.v1","captures":[dict(r) for r in c.execute("SELECT * FROM captures ORDER BY created_at")],
                 "events":[dict(r) for r in c.execute("SELECT * FROM capture_events ORDER BY id")]}
+
+def convert_task_to_thought(task_id:str)->dict|None:
+    """Atomically migrate a mistakenly categorized task without destroying its history.
+    Converted tasks are no longer open, but are NOT marked completed.
+    """
+    init()
+    with db.connect() as conn:
+        row=conn.execute("SELECT * FROM tasks WHERE id=?",(task_id,)).fetchone()
+        if not row:return None
+        if row["status"]=="converted":
+            raise ValueError("Task already converted")
+        original=row["title"]+(("\n"+row["notes"]) if row["notes"] else "")
+        identifier=str(uuid.uuid4()); t=db.now()
+        conn.execute("INSERT INTO captures(id,original_text,kind,source,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+                     (identifier,original,"thought","converted_from_task","inbox",t,t))
+        import json
+        provenance={"task_id":task_id,"original_task_created_at":row["created_at"],
+                    "original_task_due_at":row["due_at"]}
+        conn.execute("INSERT INTO capture_events(capture_id,event,timestamp,payload) VALUES (?,?,?,?)",
+                     (identifier,"converted_from_task",t,json.dumps(provenance)))
+        conn.execute("UPDATE tasks SET status='converted',updated_at=? WHERE id=?",(t,task_id))
+        conn.execute("INSERT INTO events(task_id,action,at,changes) VALUES (?,?,?,?)",
+                     (task_id,"converted_to_thought",t,json.dumps({"capture_id":identifier,"previous_status":row["status"]})))
+        return dict(conn.execute("SELECT * FROM captures WHERE id=?",(identifier,)).fetchone())
