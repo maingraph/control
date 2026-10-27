@@ -2,7 +2,8 @@ import os,secrets
 from fastapi import FastAPI,HTTPException,Request
 from fastapi.responses import JSONResponse,HTMLResponse
 from pathlib import Path
-from . import db, context as ctx
+from . import db, context as ctx, inbox
+from .mobile import router as mobile_router
 from pydantic import BaseModel
 class ContextValue(BaseModel):
     value: str
@@ -40,13 +41,25 @@ def create_app(lifespan=None):
     def export():return db.export()
     @app.get("/api/context")
     def context():
-        return {"context":ctx.list_context(),"open_tasks":db.listing("open")}
+        return {"context":ctx.list_context(),"open_tasks":db.listing("open"),"thought_inbox":inbox.listing("inbox",50)}
     @app.put("/api/context/{key}")
     def edit_context(key:str,body:ContextValue):
         try:return ctx.set_context(key,body.value)
         except ValueError as e:raise HTTPException(422,str(e))
+    @app.get("/api/inbox")
+    def get_inbox(status:str="inbox"):
+        try:return inbox.listing(status,200)
+        except ValueError as e:raise HTTPException(422,str(e))
+    @app.post("/api/inbox",status_code=201)
+    def add_inbox(body:inbox.CaptureInput):
+        try:return inbox.record(body)
+        except ValueError as e:raise HTTPException(422,str(e))
+    @app.patch("/api/inbox/{capture_id}")
+    def change_inbox(capture_id:str,body:inbox.CaptureStatus):
+        return inbox.update_status(capture_id,body.status) or (_ for _ in ()).throw(HTTPException(404,"Not found"))
     @app.get("/api/export/all")
     def export_all():
-        return {"format":"control.full_export.v1","tasks":db.export(),"context":ctx.list_context()}
+        return {"format":"control.full_export.v2","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export()}
+    app.include_router(mobile_router)
     return app
 app=create_app()
