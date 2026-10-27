@@ -64,3 +64,22 @@ The existing installed Sites plugin's `read_control_context` tool already return
 3. `review_control_capture(capture_id,status="reviewed")` (do not archive without confirmation)
 
 These tools should call the REST endpoints with server-side secret injection. After republishing the Site, verify the new tools are exposed in ChatGPT Plus, and independently read back a newly created raw thought. Do not assert this is complete until tested. Avoid unnecessary exposure of the original thought content in Site logs.
+
+
+## Semantic memory v0.2 — update the Sites plugin
+
+The existing ChatGPT Plus connector can now read aggregate `semantic_memory` status via `GET /api/context`, but **new semantic tools won't appear automatically** in the installed Site. Add and republish these server-side proxy tools (same secret bearer authentication):
+
+- `semantic_search_control(query,limit=8)` → `POST /api/memory/search` body `{"query":"...","limit":8}`
+- `get_control_memory_status()` → `GET /api/memory/status`
+- `suggest_related_control(node_id)` → `GET /api/memory/related/{node_id}?limit=5&threshold=0.42&propose=true` (link status remains suggested)
+- `list_control_memory_nodes()` → `GET /api/memory/nodes`
+- `list_control_links(status="all")` → `GET /api/memory/links?status=...`
+- `propose_control_link(source_id,target_id,relation,rationale)` → `POST /api/memory/links` (all links created as suggested)
+- `review_control_link(link_id,status)` → `PATCH /api/memory/links/{link_id}` `{"status":"confirmed"|"rejected"}` **only after user approval**
+- `create_control_knowledge(kind,statement,source_node_id,evidence)` → `POST /api/memory/knowledge` (derived knowledge is always a draft)
+- `review_control_knowledge(node_id,status)` → `PATCH /api/memory/knowledge/{node_id}` for user-confirmed derived claims.
+
+**No secret may be embedded in site code, logs, browser JavaScript, or client requests.** Do not fabricate graph edges or represent high cosine similarity as evidence of psychological causation. All calls must proxy to the same Railway data, not a second Site database.
+
+After republishing and installing the update, test a semantic search for "I postpone applying for jobs" and verify matches against Control nodes, then test an explicitly user-approved relationship before claiming ChatGPT write compatibility with graph operations.
