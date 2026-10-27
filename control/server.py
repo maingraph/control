@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from mcp.server.fastmcp import FastMCP
 from . import db, context as ctx, inbox, memory
@@ -83,6 +84,11 @@ async def lifespan(app:FastAPI):
     ctx.ensure()
     inbox.init()
     memory.init()
+    try:
+        indexed=memory.index_pending(500)
+        logging.getLogger("control.memory").info("Semantic index ready: %s indexed, %s remaining",indexed["indexed"],indexed["remaining"])
+    except Exception:
+        logging.getLogger("control.memory").exception("Semantic startup indexing failed; source records and task API remain available")
     async with mcp.session_manager.run():
         yield
 app=create_app(lifespan=lifespan)
