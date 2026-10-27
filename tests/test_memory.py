@@ -54,7 +54,7 @@ class SemanticMemoryTests(unittest.TestCase):
             accepted=memory.decide_link(suggestions[0]["id"],memory.LinkDecision(status="confirmed"))
             self.assertEqual(accepted["status"],"confirmed")
         # A raw note must never change through derived knowledge.
-        self.assertEqual(inbox.listing("all")[1]["original_text"],"I keep delaying job applications")
+        self.assertEqual(next(x["original_text"] for x in inbox.listing("all") if x["id"]==a["id"]),"I keep delaying job applications")
         self.assertEqual(memory.status()["embeddings"],4)
 
     def test_draft_knowledge_has_source(self):
