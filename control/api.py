@@ -2,7 +2,10 @@ import os,secrets
 from fastapi import FastAPI,HTTPException,Request
 from fastapi.responses import JSONResponse,HTMLResponse
 from pathlib import Path
-from . import db
+from . import db, context as ctx
+from pydantic import BaseModel
+class ContextValue(BaseModel):
+    value: str
 from .models import TaskCreate,TaskPatch
 def create_app(lifespan=None):
     app=FastAPI(title="Control",lifespan=lifespan)
@@ -37,6 +40,13 @@ def create_app(lifespan=None):
     def export():return db.export()
     @app.get("/api/context")
     def context():
-        return {"open_tasks":db.listing("open")}
+        return {"context":ctx.list_context(),"open_tasks":db.listing("open")}
+    @app.put("/api/context/{key}")
+    def edit_context(key:str,body:ContextValue):
+        try:return ctx.set_context(key,body.value)
+        except ValueError as e:raise HTTPException(422,str(e))
+    @app.get("/api/export/all")
+    def export_all():
+        return {"format":"control.full_export.v1","tasks":db.export(),"context":ctx.list_context()}
     return app
 app=create_app()
