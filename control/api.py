@@ -46,7 +46,7 @@ def create_app(lifespan=None):
     def export():return db.export()
     @app.get("/api/context")
     def context():
-        return {"context":ctx.list_context(),"open_tasks":db.listing("open"),"thought_inbox":inbox.listing("inbox",50)}
+        return {"context":ctx.list_context(),"open_tasks":db.listing("open"),"thought_inbox":inbox.listing("inbox",50),"semantic_memory":memory.status()}
     @app.put("/api/context/{key}")
     def edit_context(key:str,body:ContextValue):
         try:return ctx.set_context(key,body.value)
