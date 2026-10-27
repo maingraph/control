@@ -112,8 +112,12 @@ def sync_sources() -> dict:
     from . import context
     context.ensure()
     with db.connect() as c:
-        for row in c.execute("SELECT id,title,notes FROM tasks WHERE status != 'converted'"):
+        for row in c.execute("SELECT id,title,notes,status FROM tasks"):
             text=row["title"] + ("\n"+row["notes"] if row["notes"] else "")
+            if row["status"]=="converted":
+                c.execute("UPDATE memory_nodes SET status='converted',updated_at=? WHERE id=? AND status!='converted'",
+                          (db.now(),"task:"+row["id"]))
+                continue
             changed+=_save_node(c,"task:"+row["id"],"task",text,"task:"+row["id"])
         for row in c.execute("SELECT id,original_text FROM captures"):
             changed+=_save_node(c,"capture:"+row["id"],"capture",row["original_text"],"capture:"+row["id"])
@@ -169,7 +173,7 @@ def _nearest(query_vector:list[float],limit:int,exclude_id:str|None=None) -> lis
     with db.connect() as c:
         rows=c.execute("""SELECT n.id,n.kind,n.content,n.source_ref,n.status,n.evidence,
             v.payload FROM memory_nodes n JOIN memory_vectors v ON n.id=v.node_id
-            WHERE v.model=?""",(MODEL,)).fetchall()
+            WHERE v.model=? AND n.status!='converted'""",(MODEL,)).fetchall()
     results=[{"id":r["id"],"kind":r["kind"],"content":r["content"],"source_ref":r["source_ref"],
               "status":r["status"],"evidence":r["evidence"],
               "similarity":round(_cosine(query_vector,r["payload"]),4)} for r in rows if r["id"]!=exclude_id]
