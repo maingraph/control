@@ -168,7 +168,7 @@ def _png_chunk(name:bytes,data:bytes)->bytes:
 def _icon_png(size:int)->bytes:
     rows=[]
     for y in range(size):
-        line=bytearray(b"\\x00")
+        line=bytearray(b"\x00")
         for x in range(size):
             px=(x+0.5)/size
             py=(y+0.5)/size
@@ -185,7 +185,7 @@ def _icon_png(size:int)->bytes:
         rows.append(bytes(line))
     pixels=zlib.compress(b"".join(rows),level=9)
     header=struct.pack(">IIBBBBB",size,size,8,6,0,0,0)
-    return b"\\x89PNG\\r\\n\\x1a\\n"+_png_chunk(b"IHDR",header)+_png_chunk(b"IDAT",pixels)+_png_chunk(b"IEND",b"")
+    return b"\x89PNG\r\n\x1a\n"+_png_chunk(b"IHDR",header)+_png_chunk(b"IDAT",pixels)+_png_chunk(b"IEND",b"")
 
 @router.get("/assets/icon-{size}.png")
 def png_icon(size:int):
