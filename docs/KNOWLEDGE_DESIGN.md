@@ -1,28 +1,44 @@
-# Control knowledge architecture and processing protocol
+# Control semantic memory — implementation status
 
-**Implemented today:** persistent SQLite tables for tasks, task events, named context records, raw inbox captures and capture events. AI can read/update them via authenticated REST/MCP. No embedding/vector index or semantic-nearest-neighbor search is currently implemented.
+**Implemented (v0.2):** Local, CPU-only FastEmbed `BAAI/bge-small-en-v1.5` 384-dimensional embeddings; encrypted-transport/private SQLite persistence; exact cosine similarity retrieval; source-preserving raw capture, task and context nodes; draft derived-knowledge nodes; explicit suggested/confirmed/rejected relationship edges; portable export containing nodes and links. Production Docker builds run synthetic-data semantic ranking and link review smoke tests.
+
+**Important limitations:** SQLite does not use an approximate-nearest-neighbor vector index yet. Search scans embeddings and ranks by cosine. This is appropriate for a small personal archive, not a large deployment. The model is English-oriented, and similarity is not proof of cause, intention or psychological status. No extraction model automatically converts every thought into a structured interpretation: derived knowledge must be reviewed. `embedding` inference runs locally inside Railway, not via a separately billed external text API. Control remains a single-user prototype and has not been security-hardened for highly sensitive journaling.
 
 ## Capture → Clarify → Connect → Commit → Review
 
-1. **Capture.** Store original words, exact creation timestamp, capture source and a broad kind (thought, idea, question, observation, journal, task seed). Do not silently paraphrase or diagnose.
-2. **Clarify.** When reviewing, distinguish obligations from possibilities, feelings, concerns, information and projects. Preserve original entry separately from derived interpretations. Record uncertainty.
-3. **Connect.** Link items to existing goals and projects only when supported by the user. Avoid imposing causal/psychological conclusions.
-4. **Commit.** Where the user chooses to act, prefer one physical next action, an appropriate deadline only if specified, and optional situational if-then start cue. Cap daily planned priorities to the user's stated comfort level rather than inventing a fixed rigid routine.
-5. **Review.** Revisit the unprocessed inbox and priorities regularly; allow edits, deferrals, and corrections without a punitive score. Do not mark journal entries as tasks unless the user asks.
+1. **Capture.** Store the exact original wording, creation time and capture source.
+2. **Clarify.** Distinguish a task, reflection, concern, question or idea. Keep hypotheses as separate draft knowledge records, never replacing a raw note.
+3. **Connect.** Retrieve semantically similar nodes. `related_to`, `supports`, `blocks`, `depends_on`, `part_of` edges initially have **suggested** status, even when suggested by AI. A person confirms or rejects.
+4. **Commit.** Create the smallest action the user chooses, without invented deadlines. Optional if–then start cues and a realistic daily limit support doing rather than tracking.
+5. **Review.** Revisit the raw inbox, drafts, linked evidence, priorities and unclear dates. Avoid punitive scores or diagnosing the person from recurring patterns.
 
-The implementation-intentions and mental-contrasting/WOOP concepts can support getting started but cannot guarantee outcomes or substitute for professional psychological treatment.
+## Database
 
-## Proposed semantic memory (not implemented)
+- `captures` + `capture_events`: immutable original thoughts; review state changes audited.
+- `tasks` + `events`: actions, deadlines and changes. Accidental task → thought conversion keeps the original task as `converted`, with provenance, and is not misreported as completion.
+- `context_records`: named goals and planning preferences with provenance.
+- `memory_nodes`: searchable source snapshots and separately derived draft knowledge.
+- `memory_vectors`: normalized 384D local model vectors as float32 SQLite BLOBs plus model and text fingerprint.
+- `memory_links`: typed relationships, source, rationale, timestamps, and human review status.
 
-- **Knowledge nodes:** `id`, `kind` (goal/project/event/decision/preference/constraint/observation), `statement`, `source_id`, `certainty`, `confirmed_by_user`, `valid_from`, `valid_to`, `created_at`, `updated_at`
-- **Relations:** `source_id`, `target_id`, `relation` (supports/blocks/part_of/related_to/depends_on), `rationale`, `provenance`
-- **Embeddings:** source text fingerprint, model name/version, vector representation, update timestamp, explicit consent to processing
-- **Retrieval:** exact structured SQL first, then scoped semantic retrieval, and AI synthesis quoting original supporting records
-- **Corrections:** retain original capture immutable; revise the derived structured knowledge without rewriting history
-- **Privacy:** choose an explicitly approved local/private embedding model vs. hosted embeddings before processing sensitive thoughts. Model changes require reindexing; all user data must remain exportable.
+Source changes are indexed lazily at the next semantic query or explicit `POST /api/memory/reindex` call. The first query may take longer as it builds vectors. Query results carry source references and scores.
 
-Suggested implementation: SQLite or PostgreSQL with a vector extension, semantic embedding pipeline, index rebuild/versioning, duplicate handling and tests for retrieval quality. The term 'semantic database' should only be claimed after the vector layer, linking/provenance and retrieval have been implemented and verified.
+## API
 
-## Current data caveats
+- `GET /api/memory/status`
+- `POST /api/memory/search` `{"query":"hard to start job applications","limit":8}`
+- `POST /api/memory/reindex?limit=100`
+- `GET /api/memory/nodes` and `POST /api/memory/knowledge`
+- `PATCH /api/memory/knowledge/{node_id}` (confirm/reject drafted interpretation)
+- `GET /api/memory/related/{node_id}?propose=true`
+- `GET /api/memory/links`, `POST /api/memory/links`, `PATCH /api/memory/links/{link_id}`
 
-Prior user conversation has supplied broad goals and planning preferences, not full task deadlines, detailed finances, all past notes, or every thought. Context records include source flags. Do not infer details or silently migrate content that hasn't been explicitly provided.
+All `/api/` endpoints require the existing Control secret. The installed ChatGPT Plus Sites plugin needs its tool definitions extended to call semantic search and link review endpoints. Claude's remote MCP endpoint exposes matching tools from the backend.
+
+## Next improvements, not yet completed
+
+- Postgres or sqlite-vec for indexed ANN retrieval if the personal corpus grows.
+- Automatic summarization with a transparent confirmation queue, not silent AI rewriting.
+- Optional multilingual embedding model after language needs are known.
+- Robust backups, device-scoped authentication, key rotation, audit, and encrypted-at-rest storage.
+- Native Samsung widget and background reminders.
