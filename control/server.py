@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from mcp.server.fastmcp import FastMCP
-from . import db, context as ctx, inbox
+from . import db, context as ctx, inbox, memory
 from .api import create_app
 from .models import TaskCreate,TaskPatch
 mcp=FastMCP("Control",stateless_http=True,json_response=True,streamable_http_path="/")
@@ -42,14 +42,43 @@ def review_control_capture(capture_id:str,status:str="reviewed")->dict:
     """Set an explicitly reviewed inbox entry to reviewed, archived, or inbox."""
     return inbox.update_status(capture_id,status) or {"error":"not found"}
 @mcp.tool()
+def semantic_search_control(query:str,limit:int=8)->dict:
+    """Semantic similarity retrieval over Control's actual private notes, tasks and goals. Results include provenance and similarity, not inferred fact."""
+    return memory.search(query,limit)
+@mcp.tool()
+def control_memory_status()->dict:
+    """Report local embedding model, indexed nodes and reviewable relationship links."""
+    return memory.status()
+@mcp.tool()
+def create_control_knowledge(kind:str,statement:str,source_node_id:str|None=None,evidence:str="")->dict:
+    """Record a DRAFT interpretation or decision, linked to source evidence if known; do not silently claim user confirmation."""
+    return memory.add_knowledge(memory.KnowledgeInput(kind=kind,statement=statement,source_node_id=source_node_id,evidence=evidence))
+@mcp.tool()
+def get_control_related_memory(node_id:str,limit:int=5,threshold:float=0.35,propose:bool=False)->dict:
+    """Find meaningfully similar memories; proposed relationships are unconfirmed until user reviews."""
+    return memory.related(node_id,limit,threshold,propose)
+@mcp.tool()
+def list_control_links(status:str="all")->list[dict]:
+    """Read user-confirmed and AI-suggested relationships, with statuses."""
+    return memory.links(status)
+@mcp.tool()
+def suggest_control_link(source_id:str,target_id:str,relation:str="related_to",rationale:str="")->dict:
+    """Record a proposed relationship; user must confirm before treating it as fact."""
+    return memory.add_link(memory.LinkInput(source_id=source_id,target_id=target_id,relation=relation,rationale=rationale))
+@mcp.tool()
+def decide_control_link(link_id:str,status:str)->dict:
+    """Only after explicit user instruction, mark a proposed link confirmed or rejected."""
+    return memory.decide_link(link_id,memory.LinkDecision(status=status)) or {"error":"not found"}
+@mcp.tool()
 def export_control_data()->dict:
     """Portable export with event history."""
-    return {"format":"control.full_export.v2","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export()}
+    return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")}}
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     db.init()
     ctx.ensure()
     inbox.init()
+    memory.init()
     async with mcp.session_manager.run():
         yield
 app=create_app(lifespan=lifespan)
