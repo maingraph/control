@@ -46,3 +46,21 @@ After previewing and testing, publish privately. Publishing must create the Site
 **Important**: Direct custom MCP server installation is not supported on ChatGPT Plus. Use a Site-hosted plugin. The Site's ability to make authenticated requests to this external Railway backend still requires testing.
 
 The original GitHub repository is currently **public**. Keep all user data and secrets in Railway and the Site's private secrets; consider changing the GitHub repo to private.
+
+
+## October 2026 update: mobile capture and structured inbox
+
+The backend now has a private raw thought inbox used by the Android PWA:
+
+- `GET /api/inbox?status=inbox|reviewed|archived|all`
+- `POST /api/inbox` with `{"text":"verbatim thought","kind":"thought","source":"chatgpt"}`
+- `PATCH /api/inbox/{capture_id}` with `{"status":"reviewed"}`
+- `GET /api/context` now includes the pending `thought_inbox` field automatically.
+- `GET /api/export/all` now includes `inbox` and capture audit events.
+
+The existing installed Sites plugin's `read_control_context` tool already returns pending inbox entries without modification. However, its *write* tool definitions must be updated in the Sites editor for full functionality. Add three secure server-only proxy MCP tools:
+1. `list_control_inbox(status="inbox")`
+2. `capture_control_thought(text,kind="thought",source="chatgpt")` (never paraphrase original)
+3. `review_control_capture(capture_id,status="reviewed")` (do not archive without confirmation)
+
+These tools should call the REST endpoints with server-side secret injection. After republishing the Site, verify the new tools are exposed in ChatGPT Plus, and independently read back a newly created raw thought. Do not assert this is complete until tested. Avoid unnecessary exposure of the original thought content in Site logs.
