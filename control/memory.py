@@ -210,6 +210,16 @@ def add_knowledge(data:KnowledgeInput)->dict:
         _save_node(c,node_id,data.kind,value,data.source_node_id,"draft",data.evidence)
     return node(node_id)
 
+def decide_knowledge(node_id:str,status:str)->dict|None:
+    """User-approved transition for derived interpretations, not raw source records."""
+    if status not in ("confirmed","rejected"):raise ValueError("Invalid knowledge status")
+    if not node_id.startswith("knowledge:"):raise ValueError("Only derived knowledge may be reviewed")
+    with db.connect() as c:
+        found=c.execute("SELECT * FROM memory_nodes WHERE id=? AND kind NOT IN ('task','capture','context')",(node_id,)).fetchone()
+        if not found:return None
+        c.execute("UPDATE memory_nodes SET status=?,updated_at=? WHERE id=?",(status,db.now(),node_id))
+        return dict(c.execute("SELECT * FROM memory_nodes WHERE id=?",(node_id,)).fetchone())
+
 def _add_link(data:LinkInput,source:str="user_or_assistant_suggestion")->dict:
     if data.source_id==data.target_id:raise ValueError("Cannot link a node to itself")
     if not node(data.source_id) or not node(data.target_id):raise ValueError("Unknown node")
