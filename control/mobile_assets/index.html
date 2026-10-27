@@ -31,6 +31,11 @@
 <aside class="panel inbox-panel"><div class="aside-head"><div><p class="eyebrow">REVIEW WHEN READY</p><h2>Thought inbox <span id="inbox-count"></span></h2></div><button type="button" id="refresh" class="textbtn">Refresh</button></div>
 <div id="inbox-list" class="itemlist"><p class="empty">Loading your inbox…</p></div></aside></div>
 <section class="panel tasks-panel"><div class="aside-head"><div><p class="eyebrow">WHAT MATTERS NEXT</p><h2>Open tasks <span id="task-count"></span></h2></div><button type="button" id="copy-digest" class="textbtn">Ask ChatGPT to digest</button></div><div id="task-list" class="itemlist"><p class="empty">Loading tasks…</p></div></section>
+<section class="panel memory-panel"><div class="aside-head"><div><p class="eyebrow">FIND THE CONNECTIONS</p><h2>Semantic memory <span id="vector-count"></span></h2><p class="sub">Search by meaning, not just matching words.</p></div><button type="button" id="refresh-memory" class="textbtn">Refresh</button></div>
+<form id="memory-search-form" class="memory-search"><label for="memory-query">What are you trying to remember?</label><div class="search-row"><input id="memory-query" maxlength="1000" placeholder="e.g. Why do I keep delaying applications?" required><button class="primary" type="submit" id="memory-submit">Search</button></div></form>
+<p id="memory-notice" class="micro" role="status">Embeddings are generated locally on the Control server.</p><div id="memory-results" class="itemlist"></div>
+<div class="aside-head memory-review-head"><div><p class="eyebrow">YOUR APPROVAL MATTERS</p><h2>Suggested connections <span id="link-count"></span></h2></div></div>
+<p class="micro">Similarity is a clue, not a psychological conclusion. Review before confirming.</p><div id="link-list" class="itemlist"></div></section>
 <div class="footer-note">Original thoughts are kept separately from tasks. Capturing requires an internet connection. <a href="https://github.com/maingraph/control" target="_blank" rel="noopener noreferrer">About Control</a></div>
 </section></main></div>
 <script src="/assets/mobile.js" defer></script>
