@@ -68,12 +68,12 @@ $("unlock-form").addEventListener("submit",async event=>{
 $("lock").addEventListener("click",async()=>{try{await request("/mobile/logout",{method:"POST",body:"{}"});}catch{} lockView();});
 $("capture-form").addEventListener("submit",async event=>{
  event.preventDefault();if(saving)return;
- const raw=$("draft").value.trim();if(!raw){setMessage("Write something first.",true);return;}
+ const raw=$("draft").value;if(!raw.trim()){setMessage("Write something first.",true);return;}
  saving=true;$("save").disabled=true;setMessage("Saving…");
  try{
   if(mode==="thought")await request("/mobile/capture",{method:"POST",body:JSON.stringify({text:raw,kind:"thought",source:"galaxy_fold"})});
   else {
-    const first=raw.split("\n")[0].trim();
+    const first=(raw.split("\n").find(line=>line.trim())||"").trim();
     const title=first.slice(0,200);
     await request("/mobile/tasks",{method:"POST",body:JSON.stringify({title,notes:raw===first?"":raw,priority:$("priority").value,project:$("project").value.trim()||null})});
   }
