@@ -1,8 +1,8 @@
 import os,secrets
-from fastapi import FastAPI,HTTPException,Request
+from fastapi import FastAPI,HTTPException,Request,BackgroundTasks
 from fastapi.responses import JSONResponse,HTMLResponse
 from pathlib import Path
-from . import db, context as ctx, inbox, memory
+from . import db, context as ctx, inbox, memory, automation
 from .mobile import router as mobile_router
 from pydantic import BaseModel
 class ContextValue(BaseModel):
@@ -46,7 +46,7 @@ def create_app(lifespan=None):
     def export():return db.export()
     @app.get("/api/context")
     def context():
-        return {"context":ctx.list_context(),"open_tasks":db.listing("open"),"thought_inbox":inbox.listing("inbox",50),"semantic_memory":memory.status()}
+        return {"context":ctx.list_context(),"open_tasks":db.listing("open"),"thought_inbox":inbox.listing("inbox",50),"semantic_memory":memory.status(),"processing":automation.status()}
     @app.put("/api/context/{key}")
     def edit_context(key:str,body:ContextValue):
         try:return ctx.set_context(key,body.value)
@@ -56,8 +56,11 @@ def create_app(lifespan=None):
         try:return inbox.listing(status,200)
         except ValueError as e:raise HTTPException(422,str(e))
     @app.post("/api/inbox",status_code=201)
-    def add_inbox(body:inbox.CaptureInput):
-        try:return inbox.record(body)
+    def add_inbox(body:inbox.CaptureInput,background_tasks:BackgroundTasks):
+        try:
+            captured=inbox.record(body)
+            background_tasks.add_task(automation.run,3,False)
+            return captured
         except ValueError as e:raise HTTPException(422,str(e))
     @app.patch("/api/inbox/{capture_id}")
     def change_inbox(capture_id:str,body:inbox.CaptureStatus):
@@ -97,9 +100,18 @@ def create_app(lifespan=None):
     def semantic_related(node_id:str,limit:int=5,threshold:float=0.35,propose:bool=False):
         try:return memory.related(node_id,limit,threshold,propose)
         except ValueError as exc:raise HTTPException(404,str(exc))
+    @app.get("/api/automation/status")
+    def processor_status():
+        return automation.status()
+    @app.get("/api/automation/cards")
+    def processor_cards(limit:int=30):
+        return automation.cards(limit)
+    @app.post("/api/automation/run")
+    def processor_run(max_jobs:int=12,briefs:bool=True):
+        return automation.run(max_jobs,briefs)
     @app.get("/api/export/all")
     def export_all():
-        return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")}}
+        return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")},"automation":automation.export()}
     app.include_router(mobile_router)
     return app
 app=create_app()
