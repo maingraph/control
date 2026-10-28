@@ -41,9 +41,12 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('id="insights-more"',dashboard.text)
         self.assertIn('id="thought-summary-count"',dashboard.text)
         self.assertIn('id="hero-day-tag"',dashboard.text)
-        self.assertIn('<h1>JUST<br><em>BEGIN.</em></h1>',dashboard.text)
+        self.assertIn('id="hero-primary"',dashboard.text)
+        self.assertIn('id="hero-secondary"',dashboard.text)
         self.assertIn('id="day-summary"',dashboard.text)
         self.assertIn('id="overview-text"',dashboard.text)
+        self.assertIn('id="overview-insight"',dashboard.text)
+        self.assertIn('id="overview-next-step"',dashboard.text)
         self.assertIn('id="overview-meta"',dashboard.text)
         self.assertIn('id="task-editor"',dashboard.text)
         self.assertIn('id="edit-task-date"',dashboard.text)
@@ -64,6 +67,12 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('display("undated-section",suggested.length>0)',dashboard_js)
         self.assertIn('control_theme_studio',dashboard_js)
         self.assertIn('function renderOverview()',dashboard_js)
+        self.assertIn('function renderHero()',dashboard_js)
+        self.assertIn('function rankScore(task)',dashboard_js)
+        self.assertIn('function recentlyFinished()',dashboard_js)
+        self.assertIn('"/mobile/tasks/recent"',dashboard_js)
+        self.assertIn('values.done',dashboard_js)
+        self.assertIn('function aiRank(task)',dashboard_js)
         self.assertIn('function openTaskEditor(task)',dashboard_js)
         self.assertIn('function renderUnscheduled()',dashboard_js)
         self.assertIn('overviewIsFresh(data)',dashboard_js)
@@ -138,5 +147,29 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(edited.json()["title"],"Attend game-development interview")
         self.assertIn("2026-10-29",edited.json()["due_at"])
         self.assertIn("Original task:",edited.json()["notes"])
+
+    def test_recent_completion_and_device_timezone(self):
+        self.unlock()
+        task=self.client.post("/mobile/tasks",headers=self.headers,json={
+            "title":"Interview at 13","priority":"high"}).json()
+        self.assertEqual(self.client.get("/mobile/tasks/recent").json(),[])
+        completed=self.client.patch("/mobile/tasks/"+task["id"],headers=self.headers,
+            json={"status":"done"})
+        self.assertEqual(completed.status_code,200,completed.text)
+        history=self.client.get("/mobile/tasks/recent")
+        self.assertEqual(history.status_code,200,history.text)
+        self.assertEqual(len(history.json()),1)
+        self.assertEqual(history.json()[0]["title"],"Interview at 13")
+        self.assertEqual(self.client.get("/mobile/tasks").json(),[])
+        self.assertEqual(self.client.post("/mobile/device-timezone",
+            headers=self.headers,json={"timezone":"Europe/Minsk"}).status_code,200)
+        records=self.client.get("/mobile/context").json()["records"]
+        self.assertEqual(records["device_timezone"]["value"],"Europe/Minsk")
+        self.assertEqual(self.client.post("/mobile/device-timezone",
+            headers=self.headers,json={"timezone":"Unknown/Imaginary"}).status_code,422)
+    def test_rejects_unauthed_recent_history(self):
+        self.assertEqual(self.client.get("/mobile/tasks/recent").status_code,401)
+        self.assertEqual(self.client.post("/mobile/device-timezone",headers=self.headers,
+            json={"timezone":"Europe/Minsk"}).status_code,401)
 
 if __name__=="__main__":unittest.main()
