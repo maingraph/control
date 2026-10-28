@@ -1,6 +1,6 @@
 import os,secrets
 from fastapi import FastAPI,HTTPException,Request,BackgroundTasks
-from fastapi.responses import JSONResponse,HTMLResponse
+from fastapi.responses import JSONResponse,HTMLResponse,RedirectResponse
 from pathlib import Path
 from . import db, context as ctx, inbox, memory, automation
 from .mobile import router as mobile_router
@@ -27,8 +27,8 @@ def create_app(lifespan=None):
         return await call_next(request)
     @app.get("/healthz")
     def health():return {"status":"ok","service":"control-v0.1"}
-    @app.get("/")
-    def home():return HTMLResponse('<html><head><title>Control</title></head><body><h1>Control v0.1</h1><p>Backend online. Authenticate using the API or connect an AI client.</p></body></html>')
+    @app.get("/",include_in_schema=False)
+    def home():return RedirectResponse("/app",status_code=307)
     @app.get("/api/tasks")
     def tasks(status:str="all"):
         try:return db.listing(status)
