@@ -212,8 +212,8 @@ $("lock").addEventListener("click",async()=>{
  try{await api("/mobile/logout",{method:"POST",body:"{}"});}catch{}
  lockView();
 });
-$("calendar-prev").addEventListener("click",()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()-1,1);renderCalendar();});
-$("calendar-next").addEventListener("click",()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()+1,1);renderCalendar();});
+$("calendar-prev").addEventListener("click",()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()-1,1);state.selected=dayKey(state.month);renderCalendar();});
+$("calendar-next").addEventListener("click",()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()+1,1);state.selected=dayKey(state.month);renderCalendar();});
 $("calendar-today").addEventListener("click",()=>{state.month=new Date(now().getFullYear(),now().getMonth(),1);state.selected=dayKey(now());renderCalendar();});
 $("show-all-tasks").addEventListener("click",()=>{
  const drawer=$("all-task-drawer"),show=drawer.classList.contains("hidden");
