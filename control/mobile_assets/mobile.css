@@ -64,3 +64,20 @@ textarea,input,select{background:#111722;color:var(--fg);border:1px solid #39415
 .inbox-quick-actions{display:flex;justify-content:flex-start;margin:5px 0 17px}
 .inbox-quick-actions button{font-size:13px;white-space:normal;text-align:left}
 .inbox-panel>.micro{margin:14px 0 0;font-size:11px;color:var(--muted)}
+
+/* Unified monochrome capture tools: dashboard is intentionally light, this workspace dark. */
+:root{--bg:#101010;--panel:#1d1d1d;--line:#3c3c3c;--fg:#f8f8f8;--muted:#b0b0b0;--primary:#f5f5f5;--mint:#e5e5e5}
+body{background:linear-gradient(155deg,#202020,#101010 55%);}
+.brandmark{background:#f6f6f6;color:#111}
+.panel{background:linear-gradient(140deg,#202020,#181818);border-color:#3d3d3d}
+.tabs,.item{background:#111;border-color:#363636}
+.tabs button.active{background:#444;color:#fff}
+textarea,input,select{background:#121212;border-color:#424242}
+textarea:focus,input:focus,select:focus{box-shadow:0 0 0 3px #ffffff17}
+.primary{color:#111}
+.secondary-action{background:#303030;border-color:#555}
+.textbtn{color:#f5f5f5}
+.chat{background:#222;color:#fff}
+.return-home{margin-left:auto;color:#f4f4f4;font-size:12px;text-decoration:none;border:1px solid #555;padding:9px 12px;border-radius:20px;white-space:nowrap}
+header{gap:10px}
+@media(max-width:480px){.brand small{display:none}.return-home{font-size:11px;padding:8px 9px}}
