@@ -367,6 +367,11 @@ async function loadDashboard(){
  if(outcomes[1].status==="fulfilled")state.recentDone=outcomes[1].value;else failures.push("recent completions");
  if(outcomes[2].status==="fulfilled")state.captures=outcomes[2].value;else failures.push("inbox");
  if(outcomes[3].status==="fulfilled")state.context=outcomes[3].value.records||{};else failures.push("context");
+ const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+ if(tz&&state.context.device_timezone?.value!==tz)
+  api("/mobile/device-timezone",{method:"POST",body:JSON.stringify({timezone:tz})})
+   .then(result=>{state.context.device_timezone={value:tz,updated_at:result.updated_at};})
+   .catch(()=>{});
  renderTasks();renderThoughts();renderCalendar();renderGoals();renderAnalyses();restoreDayPlan();
  renderOverview();renderHero();
  message(failures.length?"Some Control data is temporarily unavailable: "+failures.join(", "):"");
