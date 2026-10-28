@@ -29,7 +29,9 @@
 </form>
 <p id="message" class="notice" role="status"></p></section>
 <aside class="panel inbox-panel"><div class="aside-head"><div><p class="eyebrow">REVIEW WHEN READY</p><h2>Thought inbox <span id="inbox-count"></span></h2></div><button type="button" id="refresh" class="textbtn">Refresh</button></div>
-<div id="inbox-list" class="itemlist"><p class="empty">Loading your inbox…</p></div></aside></div>
+<div class="inbox-quick-actions"><button type="button" class="secondary-action" id="analyze-inbox">Analyze pending thoughts in ChatGPT</button></div>
+<div id="inbox-list" class="itemlist"><p class="empty">Loading your inbox…</p></div>
+<p class="micro">Immediate review opens ChatGPT. Nothing is sent until you paste the copied request.</p></aside></div>
 <section class="panel tasks-panel"><div class="aside-head"><div><p class="eyebrow">WHAT MATTERS NEXT</p><h2>Open tasks <span id="task-count"></span></h2></div><button type="button" id="copy-digest" class="textbtn">Ask ChatGPT to digest</button></div><div id="task-list" class="itemlist"><p class="empty">Loading tasks…</p></div></section>
 <section class="panel ai-review-panel" aria-labelledby="ai-review-title">
 <div class="aside-head"><div><p class="eyebrow">CHATGPT REVIEW</p><h2 id="ai-review-title">AI thought analyses <span id="ai-review-count"></span></h2><p class="sub">Thoughtful draft interpretations from the scheduled assistant, never automatic obligations.</p></div><button type="button" id="ai-review-refresh" class="textbtn">Refresh</button></div>
