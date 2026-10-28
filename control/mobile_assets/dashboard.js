@@ -96,6 +96,7 @@ function renderTasks(){
 function renderThoughts(){
  $("stat-thoughts").textContent=state.captures.length;
  $("inbox-badge").textContent=state.captures.length;
+ $("thought-summary-count").textContent=state.captures.length?"("+state.captures.length+")":"";
  const box=$("thought-list");box.replaceChildren();
  if(!state.captures.length){box.append(element("p","empty","Your inbox is clear. Capture anything now; we can decide what it means later."));return;}
  for(const item of state.captures.slice(0,4)){
