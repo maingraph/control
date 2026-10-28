@@ -259,14 +259,14 @@ def _icon_png(size:int)->bytes:
             px=(x+0.5)/size
             py=(y+0.5)/size
             # Solid midnight background; draw a simple high-contrast letter C.
-            color=(16,20,27,255)
+            color=(17,17,17,255)
             dx=px-.50;dy=py-.50
             radius=math.hypot(dx,dy)
             angle=math.atan2(dy,dx)
             if 0.24<radius<0.32 and abs(angle)>0.63:
-                color=(154,186,255,255)
+                color=(250,250,250,255)
             if (px-.76)**2+(py-.25)**2<0.036**2:
-                color=(165,229,206,255)
+                color=(250,250,250,255)
             line.extend(color)
         rows.append(bytes(line))
     pixels=zlib.compress(b"".join(rows),level=9)
