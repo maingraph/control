@@ -53,3 +53,10 @@ textarea,input,select{background:#111722;color:var(--fg);border:1px solid #39415
 .processing-item .card-detail p{line-height:1.5}
 .processing-item .card-detail small{color:var(--muted);font-size:11px}
 .processing-item .card-detail ul{padding-left:18px;color:var(--muted);font-size:12px}
+
+.ai-review-panel{margin-top:16px}
+.ai-review-panel .itemlist{max-height:560px}
+.ai-review-title{color:var(--primary);font-weight:700;font-size:12px!important;margin-bottom:8px!important}
+.ai-review-original{white-space:pre-wrap;font-size:14px!important;font-weight:600;margin-bottom:13px!important}
+.ai-review-detail{font-size:13px!important;margin-top:7px!important;color:var(--muted)}
+.ai-review-detail strong{color:var(--fg)}
