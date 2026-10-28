@@ -3,7 +3,7 @@
  * Never put auth secrets, private thoughts, or access tokens in browser storage.
  */
 const $=id=>document.getElementById(id);
-const state={tasks:[],captures:[],context:{},month:new Date(),selected:null,timerEnd:null,timerHandle:null,unlocked:false};
+const state={tasks:[],recentDone:[],captures:[],context:{},month:new Date(),selected:null,timerEnd:null,timerHandle:null,unlocked:false};
 const now=()=>new Date();
 function pad(x){return String(x).padStart(2,"0");}
 function dayKey(value){const d=new Date(value);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
@@ -39,16 +39,95 @@ function renderClock(){
  $("local-time").textContent=hhmm(d);
  $("local-zone").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone||"Local";
  $("hero-day-tag").textContent=d.toLocaleDateString(undefined,{weekday:"long"}).toUpperCase()+"\n"+d.toLocaleDateString(undefined,{month:"short",day:"numeric"}).toUpperCase();
- $("today-long").textContent=dateLong(d)+" · One step at a time.";
+ // The headline is evaluated from live commitments, not selected at random.
+ if(state.unlocked)renderHero();
 }
 function taskDue(task){if(!task.due_at)return null;const date=new Date(task.due_at);return Number.isNaN(+date)?null:date;}
 function taskPriority(task){return task.priority==="high"?0:task.priority==="medium"?1:2;}
 function taskSort(a,b){
- const da=taskDue(a),db=taskDue(b);
- if(da&&db)return +da-+db||taskPriority(a)-taskPriority(b);
- if(da)return -1;
- if(db)return 1;
- return taskPriority(a)-taskPriority(b)||(a.created_at||"").localeCompare(b.created_at||"");
+ const diff=rankScore(b)-rankScore(a);
+ if(diff)return diff;
+ const ad=taskDue(a),bd=taskDue(b);
+ if(ad&&bd)return +ad-+bd;
+ return taskPriority(a)-taskPriority(b)||a.title.localeCompare(b.title);
+}
+function currentOverview(){
+ const r=state.context.ai_latest_overview;
+ if(!r)return null;
+ try{
+  const data=JSON.parse(r.value);
+  if(!overviewIsFresh(data))return null;
+  const stamp=Date.parse(data.generated_at_utc||"");
+  if(!Number.isFinite(stamp)||stamp>Date.now()+300000||Date.now()-stamp>26*3600000)return null;
+  return data;
+ }catch{return null;}
+}
+function rawTimeHint(task){
+ if(taskDue(task))return false;
+ return /\b(at\s+\d{1,2}(:\d{2})?|at\s+noon|today|tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(task.title+" "+(task.notes||""));
+}
+function aiRank(task){
+ const data=currentOverview();
+ const row=Array.isArray(data?.ranked_tasks)?data.ranked_tasks.find(x=>x.id===task.id&&x.source_updated_at===task.updated_at):null;
+ if(!row||typeof row.score!=="number"||!Number.isFinite(row.score))return null;
+ return {score:Math.min(100,Math.max(0,row.score)),reason:typeof row.reason==="string"?row.reason.slice(0,180):""};
+}
+function rankScore(task){
+ const due=taskDue(task);
+ let base=task.priority==="high"?48:task.priority==="medium"?29:12;
+ if(due){
+  const hours=(due.getTime()-Date.now())/3600000;
+  if(hours<=0)base=hours>=-24?100:86;
+  else if(hours<=2)base=98;
+  else if(hours<=6)base=92;
+  else if(hours<=24)base=84;
+  else if(hours<=72)base=70;
+  else if(hours<=168)base=59;
+  else base=48;
+ }
+ const rank=aiRank(task);
+ // AI may adjust focus within an urgency band; it cannot override a real imminent deadline.
+ if(rank&&(!due||due.getTime()-Date.now()>24*3600000))
+  base=Math.max(0,Math.min(100,base+Math.max(-14,Math.min(14,(rank.score-50)*0.28))));
+ return Math.round(base);
+}
+function priorityTag(task){
+ const score=rankScore(task);
+ return score>=80?"A1":score>=55?"B1":score>=30?"B2":"C3";
+}
+function recentlyFinished(){
+ return state.recentDone.filter(t=>t.completed_at&&Date.now()-Date.parse(t.completed_at)<48*3600000)
+  .sort((a,b)=>Date.parse(b.completed_at)-Date.parse(a.completed_at));
+}
+function renderHero(){
+ const data=currentOverview();
+ const imminent=state.tasks.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=2*3600000;}).sort(taskSort);
+ const today=state.tasks.filter(t=>{const d=taskDue(t);return d&&dayKey(d)===dayKey(now());});
+ const done=recentlyFinished();
+ const interview=done.find(t=>/interview/i.test(t.title));
+ const sorted=[...state.tasks].sort(taskSort);
+ let first="PICK",second="ONE.",subtitle="One clear next step beats an endless task list.";
+ if(imminent.length){first="TIME",second="TO ACT.";subtitle=imminent[0].title+" · "+dueLabel(imminent[0]);}
+ else if(today.length){first="ON",second="DECK.";subtitle=today[0].title+" is coming up today.";}
+ else if(interview){first="GOOD",second="PROGRESS.";subtitle="Interview marked done. Capture the important details, then move on.";}
+ else if(sorted.length){first="NEXT",second="UP.";subtitle=sorted[0].title+" · One practical move.";}
+ else{first="ALL",second="CLEAR.";subtitle="No open tasks. Capture what's next when you're ready.";}
+ // A scheduled GPT headline is used only if it matches the exact current task snapshot.
+ if(data&&data.hero&&typeof data.hero==="object"){
+  const hero=data.hero;
+  const safe=s=>typeof s==="string"&&s.trim().length<=20&&/^[\p{L}\p{N} .,!?'-]+$/u.test(s);
+  if(safe(hero.line1)&&safe(hero.line2)){
+   first=hero.line1.toUpperCase().trim();second=hero.line2.trim();
+   if(typeof hero.subtitle==="string"&&hero.subtitle.length<=170)subtitle=hero.subtitle;
+  }
+ }
+ $("hero-primary").textContent=first;
+ $("hero-secondary").textContent=second;
+ $("today-long").textContent=subtitle;
+ const dueSoon=state.tasks.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;}).length;
+ const unconfirmed=state.tasks.filter(rawTimeHint).length;
+ const parts=[dueSoon?dueSoon+" due within 24h":null,state.tasks.length+" open",unconfirmed?unconfirmed+" time"+(unconfirmed===1?"":"s")+" to confirm":null,done.length?done.length+" recently finished":null].filter(Boolean);
+ $("day-summary").textContent=parts.join(" · ");
 }
 function dueLabel(task){
  const due=taskDue(task);if(!due)return "No deadline";
@@ -75,21 +154,28 @@ function overviewIsFresh(data){
   &&JSON.stringify(values.captures)===JSON.stringify(signatureRows(state.captures));
 }
 function renderOverview(){
- const record=state.context.ai_latest_overview;
- let data=null;
- if(record){try{data=JSON.parse(record.value);}catch{}}
- const pending=state.tasks.filter(x=>!taskDue(x)&&/\b(at\s+\d{1,2}(:\d{2})?|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(x.title));
- const fallback=state.tasks.length+" open task"+(state.tasks.length===1?"":"s")+
-  " · "+state.captures.length+" unreviewed thought"+(state.captures.length===1?"":"s")+".";
- const stale=Boolean(data&&!overviewIsFresh(data));
- $("overview-meta").textContent=data&&!stale
-   ?"AI draft · "+(data.generated_at_utc?dateShort(new Date(data.generated_at_utc)):"Recent")
-   :data?"Changes since last AI review":"Live state · Awaiting AI review";
- $("overview-text").textContent=data&&!stale&&typeof data.headline==="string"&&data.headline.trim()
-  ?data.headline.trim():fallback;
- const question=data&&!stale&&typeof data.clarification_question==="string"
-  ?data.clarification_question.trim():"";
- const text=question||(pending.length?"Time mentioned without a confirmed date: review "+pending.length+" task"+(pending.length===1?"":"s")+".":"");
+ const data=currentOverview();
+ const all=[...state.tasks].sort(taskSort);
+ const done=recentlyFinished();
+ const recentlyDoneInterview=done.find(x=>/interview/i.test(x.title));
+ const due=all.find(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;});
+ const pending=all.filter(rawTimeHint);
+ let fallback;
+ if(due)fallback=due.title+" is the time-sensitive one. "+(all.length>1?"Keep the other tasks secondary until it's handled.":"Take the smallest next step.");
+ else if(recentlyDoneInterview)fallback="The interview is marked done. Nice—while it's fresh, capture any follow-up and what you learned. "+(all.length?all[0].title+" is still open.":"");
+ else if(all.length)fallback="You've got "+all.length+" open task"+(all.length===1?"":"s")+". "+all[0].title+" looks like a sensible next place to start.";
+ else fallback="No active commitments to chase. Capture what's on your mind and pick a small next step when you want.";
+ $("overview-meta").textContent=data?"GPT review · "+(data.generated_at_utc?dateShort(new Date(data.generated_at_utc)):"Current"):"Live snapshot · GPT update pending";
+ $("overview-text").textContent=data&&typeof data.headline==="string"&&data.headline.trim()?data.headline.trim():fallback;
+ let insight=data&&typeof data.insight==="string"?data.insight.trim():"";
+ if(!insight&&recentlyDoneInterview)insight="A quick post-interview note can save you from having to reconstruct the conversation later.";
+ $("overview-insight").textContent=insight;
+ display("overview-insight",Boolean(insight));
+ const action=data&&typeof data.next_step==="string"?data.next_step.trim():"";
+ $("overview-next-step").textContent=action?"Try this: "+action:"";
+ display("overview-next-step",Boolean(action));
+ const question=data&&typeof data.clarification_question==="string"?data.clarification_question.trim():"";
+ const text=question||(pending.length?"A task mentions a time but has no calendar date. Open its details to schedule it.":"");
  $("overview-question").textContent=text;
  display("overview-question",Boolean(text));
 }
@@ -115,26 +201,24 @@ function openTaskEditor(task){
 }
 function taskCard(task,highlight=false){
  const row=element("div","task-card"+(highlight?" warning":""));
- const complete=element("button","done-button","✓");
+ const complete=element("button","done-button","");
  complete.type="button";complete.title="Mark task done";complete.setAttribute("aria-label","Mark "+task.title+" complete");
  complete.addEventListener("click",async()=>{
   complete.disabled=true;
-  try{await api("/mobile/tasks/"+encodeURIComponent(task.id),{method:"PATCH",body:JSON.stringify({status:"done"})});await loadDashboard();message("Task marked complete.");}
+  try{await api("/mobile/tasks/"+encodeURIComponent(task.id),{method:"PATCH",body:JSON.stringify({status:"done"})});await loadDashboard();message("Task completed. Nice progress.");}
   catch(e){complete.disabled=false;message("Couldn't complete task: "+errorMessage(e));}
  });
  const info=element("div","task-info");
- info.append(element("span","task-title",task.title));
- info.append(element("small","task-meta",[task.project||"Unsorted",dueLabel(task)].join(" · ")));
  const draft=taskDraft(task);
- if(draft&&draft.clarification_question){
-   info.append(element("small","task-draft-cue","Needs confirmation: "+draft.clarification_question));
- }
- const edit=element("button","task-edit-link",draft?"Review structure":"Edit details");
- edit.type="button";
- edit.addEventListener("click",()=>openTaskEditor(task));
- info.append(edit);
- const due=taskDue(task);
- const tag=element("span","pill"+(due&&(+due-Date.now())<0?" alert":""),due?"Due":(task.priority==="high"?"High":task.priority==="low"?"Low":"Normal"));
+ info.append(element("span","task-title",draft&&draft.proposed_title?draft.proposed_title:task.title));
+ info.append(element("small","task-meta",[task.project||"Unsorted",taskDue(task)?dueLabel(task):rawTimeHint(task)?"Time mentioned · confirm date":"Not scheduled"].join(" · ")));
+ const ai=aiRank(task);
+ if(ai?.reason)info.append(element("small","task-reason",ai.reason));
+ if(draft?.clarification_question)info.append(element("small","task-draft-cue","Needs confirmation: "+draft.clarification_question));
+ const edit=element("button","task-edit-link",draft?"Review task details":"Edit details");
+ edit.type="button";edit.addEventListener("click",()=>openTaskEditor(task));info.append(edit);
+ const tag=element("span","pill"+(taskDue(task)&&taskDue(task).getTime()-Date.now()<0?" alert":""),priorityTag(task));
+ tag.title="Relative urgency score "+rankScore(task)+" (time, priority and optional GPT advice)";
  row.append(complete,info,tag);return row;
 }
 function renderTaskGroup(target,tasks,empty,highlight=false){
@@ -143,27 +227,22 @@ function renderTaskGroup(target,tasks,empty,highlight=false){
  tasks.forEach(t=>parent.append(taskCard(t,highlight)));
 }
 function renderTasks(){
- const current=Date.now();
  const ordered=[...state.tasks].sort(taskSort);
- const urgent=ordered.filter(t=>{const d=taskDue(t);return d&&(d.getTime()-current)<=86400000;});
- const undatedHigh=ordered.filter(t=>!taskDue(t)&&t.priority==="high");
- const alternatives=ordered.filter(t=>!taskDue(t));
- const suggested=undatedHigh.length?undatedHigh:alternatives.slice(0,1);
+ const urgent=ordered.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;});
+ const remaining=ordered.filter(t=>!urgent.some(u=>u.id===t.id));
+ const topRemaining=remaining.slice(0,Math.max(0,4-Math.min(urgent.length,4)));
  $("stat-due").textContent=urgent.length;
  $("stat-open").textContent=state.tasks.length;
- $("urgent-count").textContent=urgent.length+" items";
- $("undated-count").textContent=suggested.length+" items";
- $("undated-heading").textContent=undatedHigh.length?"Important, no set time":"Choose one when ready";
+ $("urgent-count").textContent=urgent.length+" task"+(urgent.length===1?"":"s");
+ $("undated-count").textContent=topRemaining.length+" task"+(topRemaining.length===1?"":"s");
+ $("undated-heading").textContent=urgent.length?"Other priorities":"Highest-impact next steps";
  display("urgent-section",urgent.length>0);
- display("undated-section",suggested.length>0);
+ display("undated-section",topRemaining.length>0);
  renderTaskGroup("urgent-list",urgent.slice(0,4),"",true);
- renderTaskGroup("undated-list",suggested.slice(0,3),"",false);
+ renderTaskGroup("undated-list",topRemaining,"",false);
  renderTaskGroup("all-task-list",ordered,"Nothing left to do. You're up to date.");
- if(!urgent.length&&!suggested.length){
-   $("urgent-section").classList.remove("hidden");
-   renderTaskGroup("urgent-list",[],"No immediate commitments. Your day is yours to plan.");
- }
- const select=$("focus-task");const previous=select.value;select.replaceChildren();
+ if(!ordered.length){display("urgent-section",true);renderTaskGroup("urgent-list",[],"Nothing urgent. Your next thought can go straight into Capture.");}
+ const select=$("focus-task"),previous=select.value;select.replaceChildren();
  const placeholder=element("option",null,"Choose an existing task (optional)");placeholder.value="";select.append(placeholder);
  ordered.forEach(t=>{const option=element("option",null,t.title);option.value=t.id;select.append(option);});
  if(ordered.some(t=>t.id===previous))select.value=previous;
@@ -280,17 +359,14 @@ function restoreDayPlan(){
 }
 async function loadDashboard(){
  if(!state.unlocked)return;
- const outcomes=await Promise.allSettled([api("/mobile/tasks"),api("/mobile/inbox"),api("/mobile/context")]);
+ const outcomes=await Promise.allSettled([api("/mobile/tasks"),api("/mobile/tasks/recent"),api("/mobile/inbox"),api("/mobile/context")]);
  const failures=[];
  if(outcomes[0].status==="fulfilled")state.tasks=outcomes[0].value;else failures.push("tasks");
- if(outcomes[1].status==="fulfilled")state.captures=outcomes[1].value;else failures.push("inbox");
- if(outcomes[2].status==="fulfilled")state.context=outcomes[2].value.records||{};else failures.push("context");
+ if(outcomes[1].status==="fulfilled")state.recentDone=outcomes[1].value;else failures.push("recent completions");
+ if(outcomes[2].status==="fulfilled")state.captures=outcomes[2].value;else failures.push("inbox");
+ if(outcomes[3].status==="fulfilled")state.context=outcomes[3].value.records||{};else failures.push("context");
  renderTasks();renderThoughts();renderCalendar();renderGoals();renderAnalyses();restoreDayPlan();
- renderOverview();
- const urgentCount=state.tasks.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;}).length;
- $("day-summary").textContent=urgentCount
-  ? urgentCount+" due soon · "+state.tasks.length+" open"
-  : state.tasks.length+" open · No deadlines in 24h";
+ renderOverview();renderHero();
  message(failures.length?"Some Control data is temporarily unavailable: "+failures.join(", "):"");
 }
 function setTheme(theme){
@@ -388,3 +464,11 @@ setInterval(renderClock,30000);
 const givenMode=new URLSearchParams(location.search).get("mode");
 if(givenMode==="task"||givenMode==="thought"){location.replace("/capture?mode="+givenMode);}
 else{api("/mobile/me").then(unlockView).catch(lockView);}
+
+let _lastRefresh=Date.now();
+function refreshIfNeeded(){
+ if(state.unlocked&&Date.now()-_lastRefresh>90000){_lastRefresh=Date.now();loadDashboard();}
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshIfNeeded();});
+window.addEventListener("focus",refreshIfNeeded);
+setInterval(()=>{if(state.unlocked&&!document.hidden){_lastRefresh=Date.now();loadDashboard();}},180000);
