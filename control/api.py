@@ -59,7 +59,8 @@ def create_app(lifespan=None):
     def add_inbox(body:inbox.CaptureInput,background_tasks:BackgroundTasks):
         try:
             captured=inbox.record(body)
-            background_tasks.add_task(automation.run,3,False)
+            if os.getenv("CONTROL_AUTO_PROCESS_ON_CAPTURE","false").lower()=="true":
+                background_tasks.add_task(automation.run,3,False)
             return captured
         except ValueError as e:raise HTTPException(422,str(e))
     @app.patch("/api/inbox/{capture_id}")
