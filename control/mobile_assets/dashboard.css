@@ -413,3 +413,22 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
 .unscheduled-row{display:flex;align-items:center;justify-content:space-between;gap:9px;font-size:11px;color:#bdbdbd;min-width:0}
 .unscheduled-row span{overflow-wrap:anywhere}
 .unscheduled-row button{flex-shrink:0;padding:7px 9px;border:1px solid #555;border-radius:9px;background:#252525;color:white;font-size:10px}
+
+
+/* Smart, evidence-grounded overview and ranked priorities */
+.overview-insight{font-size:12px;line-height:1.58;color:var(--muted);margin:9px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.overview-next-step{font-size:12px;line-height:1.55;font-weight:720;margin:10px 0 0;overflow-wrap:anywhere}
+.overview-question{font-size:11px;color:var(--muted);margin-top:10px}
+.task-reason{font-size:10px;line-height:1.5;color:var(--muted);margin-top:5px;display:block}
+.task-card .pill{min-width:34px;text-align:center;font-weight:820;letter-spacing:.03em}
+.attention-panel .done-button{border-width:1.5px}
+.top-actions #lock{display:none!important}
+@media(max-width:620px){
+ .ai-overview{border-left-width:3px}
+ .overview-insight{font-size:12px}
+ .overview-next-step{font-size:12px}
+ .attention-panel .task-card{align-items:center;gap:10px}
+ .task-card .pill{min-width:32px}
+ .dashboard-header h1{overflow-wrap:normal}
+ .dashboard-header h1 em{font-size:.9em}
+}
