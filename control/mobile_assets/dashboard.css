@@ -127,3 +127,38 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
 @media(max-width:780px){.topbar{min-height:70px;margin-bottom:30px}.topnav{gap:13px}.topnav a{font-size:11px}.wordmark-sub{display:none}.dashboard-header h1{font-size:62px}.hero-clock{font-size:31px}.stats{gap:8px}.stat{padding:15px;min-height:92px}.stat-number{font-size:28px}.stat strong{font-size:11px}.stat small{font-size:10px}.dashboard-grid,.lower-grid{grid-template-columns:1fr}.calendar-panel{order:0}.panel{padding:23px}.cal-day{min-height:44px}.goals-strip{align-items:flex-start;flex-direction:column;gap:15px}}
 @media(max-width:540px){.shell{padding:0 15px}.topbar{min-height:65px;margin-bottom:26px}.topnav a:nth-child(3){display:none}.wordmark{font-size:12px}.brand-symbol{width:34px;height:34px;border-radius:11px;font-size:20px}.dashboard-header{align-items:flex-start}.dashboard-header h1{font-size:clamp(45px,12vw,65px)}.hero-clock{font-size:22px}.hero-zone{font-size:10px;margin-bottom:18px}.main-capture{padding:11px 12px;font-size:11px;white-space:normal}.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.stat{min-height:111px;flex-direction:column;align-items:flex-start;padding:13px 12px;gap:7px;border-radius:15px}.stat strong{font-size:10px}.stat small{font-size:9px;margin-top:3px}.stat-number{font-size:30px}.panel{padding:20px;border-radius:19px}.panel h2{font-size:27px}.panel-intro{font-size:12px}.calendar-panel{padding:22px 15px}.cal-day{min-height:43px}footer{flex-direction:column;gap:7px}.unlock-card{padding:23px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* v0.4: One primary task surface; calendar second; the rest only on demand. */
+.dashboard-header{margin-bottom:24px}
+.dashboard-header h1{font-size:clamp(47px,6.1vw,76px)}
+.dashboard-grid{grid-template-columns:minmax(0,1.07fr) minmax(310px,.93fr);align-items:start}
+.attention-panel{border:1.5px solid var(--ink);box-shadow:none}
+.attention-panel h2{font-size:clamp(27px,3vw,36px)}
+.attention-panel .task-card{background:var(--panel)}
+.attention-panel .task-card.warning{background:var(--soft)}
+.secondary-stats{display:flex;justify-content:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.secondary-stats .stat{padding:0;min-height:0;border:0;background:none;box-shadow:none;border-radius:0;gap:8px}
+.secondary-stats .stat-number{font-size:16px;min-width:0}
+.secondary-stats .stat strong{font-size:11px}
+.secondary-stats .stat small{display:none}
+.secondary-stats .stat:not(:last-child){padding-right:20px;border-right:1px solid var(--line)}
+.capture-ribbon{display:flex;justify-content:space-between;gap:18px;align-items:center;background:var(--ink);color:var(--panel);padding:23px 27px;border-radius:21px;margin:18px 0}
+.capture-ribbon .eyebrow{color:#aaa}
+.capture-ribbon h2{font-size:clamp(20px,2.4vw,26px);letter-spacing:-.05em;margin:5px 0 3px}
+.capture-ribbon p:last-child{font-size:12px;opacity:.7;margin:0}
+.capture-ribbon .button-dark{background:var(--panel);color:var(--ink);border-color:var(--panel)}
+.more-section{border-bottom:1px solid var(--line)}
+.more-section summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:15px;padding:21px 9px;cursor:pointer}
+.more-section summary::-webkit-details-marker{display:none}
+.more-section summary strong{font-size:15px;font-weight:760;display:block;letter-spacing:-.02em}
+.more-section summary small{font-size:11px;color:var(--muted);display:block;margin-top:3px}
+.disclosure-chevron{font-size:24px;color:var(--muted);transition:transform .2s}
+.more-section[open] .disclosure-chevron{transform:rotate(180deg)}
+.more-content{padding:3px 0 20px}
+.more-content>.panel{box-shadow:none}
+.more-content .lower-grid{margin-top:0}
+.more-content .focus-panel{max-width:780px}
+.more-content .inbox-panel{max-width:840px}
+.goals-strip.hidden{display:none}
+@media(max-width:780px){.dashboard-grid{grid-template-columns:1fr}.secondary-stats{gap:12px}.capture-ribbon{padding:19px 20px}}
+@media(max-width:540px){.dashboard-header h1{font-size:49px}.secondary-stats{gap:8px}.secondary-stats .stat{gap:5px}.secondary-stats .stat:not(:last-child){padding-right:9px}.secondary-stats .stat-number{font-size:16px}.secondary-stats .stat strong{font-size:10px}.capture-ribbon{margin:12px 0}.capture-ribbon h2{font-size:19px}.capture-ribbon .button{font-size:11px;padding:10px}.more-content .panel{border:0;padding:10px 2px}}
