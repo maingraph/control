@@ -56,6 +56,63 @@ function dueLabel(task){
  const label=delta<0?"Overdue":dayKey(due)===dayKey(now())?"Today":dayKey(due)===dayKey(new Date(Date.now()+86400000))?"Tomorrow":dateShort(due);
  return label+" · "+hhmm(due);
 }
+function taskDraft(task){
+ const record=state.context["ai_task_"+task.id.replaceAll("-","")];
+ if(!record)return null;
+ try{
+  const draft=JSON.parse(record.value);
+  if(draft.status!=="draft"||draft.source_task_id!==task.id||draft.source_updated_at!==task.updated_at)return null;
+  return draft;
+ }catch{return null;}
+}
+function signatureRows(records){
+ return records.map(x=>[x.id,x.updated_at]).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+function overviewIsFresh(data){
+ if(!data||!data.source_versions)return false;
+ const values=data.source_versions;
+ return JSON.stringify(values.tasks)===JSON.stringify(signatureRows(state.tasks))
+  &&JSON.stringify(values.captures)===JSON.stringify(signatureRows(state.captures));
+}
+function renderOverview(){
+ const record=state.context.ai_latest_overview;
+ let data=null;
+ if(record){try{data=JSON.parse(record.value);}catch{}}
+ const pending=state.tasks.filter(x=>!taskDue(x)&&/\\b(at\\s+\\d{1,2}(:\\d{2})?|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b/i.test(x.title));
+ const fallback=state.tasks.length+" open task"+(state.tasks.length===1?"":"s")+
+  " · "+state.captures.length+" unreviewed thought"+(state.captures.length===1?"":"s")+".";
+ const stale=Boolean(data&&!overviewIsFresh(data));
+ $("overview-meta").textContent=data&&!stale
+   ?"AI draft · "+(data.generated_at_utc?dateShort(new Date(data.generated_at_utc)):"Recent")
+   :data?"Changes since last AI review":"Live state · Awaiting AI review";
+ $("overview-text").textContent=data&&!stale&&typeof data.headline==="string"&&data.headline.trim()
+  ?data.headline.trim():fallback;
+ const question=data&&!stale&&typeof data.clarification_question==="string"
+  ?data.clarification_question.trim():"";
+ const text=question||(pending.length?"Time mentioned without a confirmed date: review "+pending.length+" task"+(pending.length===1?"":"s")+".":"");
+ $("overview-question").textContent=text;
+ display("overview-question",Boolean(text));
+}
+function openTaskEditor(task){
+ const draft=taskDraft(task);
+ $("edit-task-id").value=task.id;
+ $("task-editor-source").textContent="Original: "+task.title;
+ $("task-editor-suggestion").textContent=draft
+  ?[draft.reason,draft.clarification_question].filter(Boolean).join(" · "):"";
+ display("task-editor-suggestion",Boolean(draft));
+ $("edit-task-title").value=draft&&typeof draft.proposed_title==="string"&&draft.proposed_title.trim()
+  ?draft.proposed_title.slice(0,200):task.title;
+ $("edit-task-project").value=draft&&typeof draft.proposed_project==="string"&&draft.proposed_project
+  ?draft.proposed_project:(task.project||"");
+ const preferred=draft&&["low","medium","high"].includes(draft.proposed_priority)?draft.proposed_priority:task.priority;
+ $("edit-task-priority").value=preferred;
+ const due=taskDue(task);
+ $("edit-task-date").value=due?dayKey(due)+"T"+pad(due.getHours())+":"+pad(due.getMinutes()):"";
+ $("edit-task-zone").value="device";
+ $("task-editor-error").textContent="";
+ $("task-editor").showModal();
+ $("edit-task-title").focus();
+}
 function taskCard(task,highlight=false){
  const row=element("div","task-card"+(highlight?" warning":""));
  const complete=element("button","done-button","✓");
@@ -68,6 +125,14 @@ function taskCard(task,highlight=false){
  const info=element("div","task-info");
  info.append(element("span","task-title",task.title));
  info.append(element("small","task-meta",[task.project||"Unsorted",dueLabel(task)].join(" · ")));
+ const draft=taskDraft(task);
+ if(draft&&draft.clarification_question){
+   info.append(element("small","task-draft-cue","Needs confirmation: "+draft.clarification_question));
+ }
+ const edit=element("button","task-edit-link",draft?"Review structure":"Edit details");
+ edit.type="button";
+ edit.addEventListener("click",()=>openTaskEditor(task));
+ info.append(edit);
  const due=taskDue(task);
  const tag=element("span","pill"+(due&&(+due-Date.now())<0?" alert":""),due?"Due":(task.priority==="high"?"High":task.priority==="low"?"Low":"Normal"));
  row.append(complete,info,tag);return row;
@@ -203,6 +268,7 @@ async function loadDashboard(){
  if(outcomes[1].status==="fulfilled")state.captures=outcomes[1].value;else failures.push("inbox");
  if(outcomes[2].status==="fulfilled")state.context=outcomes[2].value.records||{};else failures.push("context");
  renderTasks();renderThoughts();renderCalendar();renderGoals();renderAnalyses();restoreDayPlan();
+ renderOverview();
  const urgentCount=state.tasks.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;}).length;
  $("day-summary").textContent=urgentCount
   ? urgentCount+" due soon · "+state.tasks.length+" open"
@@ -233,6 +299,36 @@ $("calendar-today").addEventListener("click",()=>{state.month=new Date(now().get
 $("show-all-tasks").addEventListener("click",()=>{
  const drawer=$("all-task-drawer"),show=drawer.classList.contains("hidden");
  display("all-task-drawer",show);$("show-all-tasks").textContent=show?"Hide all tasks ↑":"See all open tasks ↗";
+});
+$("task-editor-close").addEventListener("click",()=>$("task-editor").close());
+$("task-editor-cancel").addEventListener("click",()=>$("task-editor").close());
+$("task-edit-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ const task=state.tasks.find(x=>x.id===$("edit-task-id").value);
+ if(!task){$("task-editor-error").textContent="Task no longer available. Refresh Control.";return;}
+ const title=$("edit-task-title").value.trim();
+ if(!title){$("task-editor-error").textContent="Enter a task title.";return;}
+ let due_at=null;
+ const requested=$("edit-task-date").value;
+ if(requested){
+  const due=$("edit-task-zone").value==="moscow"
+   ?new Date(requested+":00+03:00"):new Date(requested);
+  if(Number.isNaN(due.getTime())){$("task-editor-error").textContent="Check the date and timezone.";return;}
+  due_at=due.toISOString();
+ }
+ const originalNote=task.title!==title&&!task.notes.includes("Original task: "+task.title)
+  ?"Original task: "+task.title:"";
+ const notes=[task.notes||"",originalNote].filter(Boolean).join("\\n");
+ const patch={title,project:$("edit-task-project").value.trim()||null,
+  priority:$("edit-task-priority").value,due_at,notes};
+ const button=$("task-editor-save");button.disabled=true;$("task-editor-error").textContent="";
+ try{
+  await api("/mobile/tasks/"+encodeURIComponent(task.id),{method:"PATCH",body:JSON.stringify(patch)});
+  $("task-editor").close();
+  await loadDashboard();
+  message("Task structured and saved. Confirmed deadlines now appear in your calendar.");
+ }catch(err){$("task-editor-error").textContent=errorMessage(err);}
+ finally{button.disabled=false;}
 });
 $("daily-plan-form").addEventListener("submit",async ev=>{
  ev.preventDefault();
