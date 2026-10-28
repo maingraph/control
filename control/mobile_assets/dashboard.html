@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f2">
+  <meta name="description" content="Control. A calm place to see what matters, when it matters.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/assets/control-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/dashboard.css">
+  <title>Control — Your day, clearly.</title>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="wordmark" href="/app" aria-label="Control dashboard">
+        <span class="brand-symbol" aria-hidden="true">C<span class="brand-dot"></span></span>
+        <span>CONTROL<span class="wordmark-sub">YOUR LIFE, IN FOCUS.</span></span>
+      </a>
+      <nav class="topnav" aria-label="Main navigation">
+        <a href="/app" aria-current="page">Overview</a>
+        <a href="/capture?mode=thought">Capture</a>
+        <a href="/capture#memory-search-form">Memory</a>
+      </nav>
+      <div class="top-actions">
+        <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch color theme" title="Switch color theme">◐</button>
+        <button id="lock" class="text-button hidden" type="button">Lock</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="unlock-wrap hidden" id="locked">
+        <div class="unlock-card">
+          <p class="eyebrow">PRIVATE WORKSPACE / CONTROL</p>
+          <h1>Less noise.<br>More direction.</h1>
+          <p class="muted">Your dashboard stays private. Unlock it using the Control key stored in Railway; the key is not saved in browser storage.</p>
+          <form id="unlock-form">
+            <label for="access">Control access key</label>
+            <input id="access" type="password" required autocomplete="off" placeholder="Paste your Railway access key">
+            <button class="button button-dark" type="submit">Unlock dashboard <span aria-hidden="true">↗</span></button>
+          </form>
+          <p class="helper">Find CONTROL_API_KEY in your Railway Control service variables. Only enter it on your Control domain.</p>
+          <p id="login-error" class="error" role="alert"></p>
+        </div>
+      </section>
+
+      <section id="dashboard" class="hidden" aria-label="Control home dashboard">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">YOUR CONTROL CENTER <span class="status-pip" aria-hidden="true"></span> CONNECTED</p>
+            <h1>Your day,<br><em>clearly.</em></h1>
+            <p class="subline" id="today-long">A quieter way to make progress.</p>
+          </div>
+          <div class="hero-aside">
+            <div class="hero-clock" id="local-time" aria-label="Local time">--:--</div>
+            <div class="hero-zone" id="local-zone">Your local time</div>
+            <a class="button button-dark main-capture" href="/capture?mode=thought"><span aria-hidden="true">＋</span> Capture a thought</a>
+          </div>
+        </div>
+
+        <section class="stats" aria-label="Current status">
+          <div class="stat"><span class="stat-number" id="stat-due">—</span><div><strong>Needs attention</strong><small>Overdue or due in 24 hours</small></div></div>
+          <div class="stat"><span class="stat-number" id="stat-open">—</span><div><strong>Open tasks</strong><small>All outstanding commitments</small></div></div>
+          <div class="stat"><span class="stat-number" id="stat-thoughts">—</span><div><strong>Thoughts to process</strong><small>Unreviewed inbox entries</small></div></div>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel attention-panel" id="attention">
+            <div class="panel-head">
+              <div><p class="eyebrow">01 / YOUR NEXT MOVES</p><h2>What matters <em>now.</em></h2></div>
+              <a href="/capture?mode=task" class="quiet-link">+ Add a task</a>
+            </div>
+            <p class="panel-intro">Only actual due dates count as urgent. An important task with no deadline is shown separately.</p>
+            <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
+            <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
+            <div class="task-heading secondary-heading"><span>Important, no set time</span><small id="undated-count"></small></div>
+            <div id="undated-list" class="compact-list"></div>
+            <button type="button" id="show-all-tasks" class="subtle-button">See all open tasks <span aria-hidden="true">↗</span></button>
+            <div id="all-task-drawer" class="drawer hidden"><div class="task-heading">All open tasks</div><div id="all-task-list" class="compact-list"></div></div>
+          </section>
+
+          <section class="panel calendar-panel" id="calendar-panel">
+            <div class="calendar-top">
+              <p class="eyebrow eyebrow-light">02 / THE CALENDAR</p>
+              <div class="calendar-nav">
+                <button id="calendar-prev" type="button" aria-label="Previous month">‹</button>
+                <button id="calendar-next" type="button" aria-label="Next month">›</button>
+              </div>
+            </div>
+            <div class="month-header">
+              <h2 id="calendar-month">—</h2>
+              <button type="button" id="calendar-today">Today</button>
+            </div>
+            <div class="weekday-grid" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div id="calendar-grid" class="calendar-grid" role="group" aria-label="Calendar dates"></div>
+            <div class="calendar-agenda">
+              <p class="calendar-agenda-date" id="selected-date">Selected day</p>
+              <div id="day-agenda"></div>
+            </div>
+            <p class="calendar-disclaimer">Displays Control task deadlines only. Not connected to a device or external calendar.</p>
+          </section>
+        </div>
+
+        <div class="lower-grid">
+          <section class="panel focus-panel" id="focus">
+            <div class="panel-head">
+              <div><p class="eyebrow">03 / GET UNSTUCK</p><h2>A small start <em>counts.</em></h2></div>
+              <span class="number-tag">05 MIN</span>
+            </div>
+            <p class="panel-intro">Pick one next action. A starting step is more useful than a perfect plan.</p>
+            <form id="daily-plan-form">
+              <label for="focus-task">What are you working toward?</label>
+              <select id="focus-task"><option value="">No task selected yet</option></select>
+              <label for="tiny-step">The first tiny action</label>
+              <input id="tiny-step" maxlength="250" placeholder="e.g. Open my CV and write one sentence">
+              <label for="start-cue">My if–then starting cue (optional)</label>
+              <input id="start-cue" maxlength="250" placeholder="e.g. When I finish coffee, I'll open my CV">
+              <div class="focus-actions">
+                <button type="submit" class="button button-dark">Save my start plan</button>
+                <button type="button" id="focus-timer" class="button button-outline">Start 5 minutes</button>
+              </div>
+              <div class="micro-feedback" id="plan-status" role="status"></div>
+              <p class="micro-note">Your plan is stored privately. This doesn't create a deadline or notification.</p>
+            </form>
+          </section>
+
+          <section class="panel inbox-panel" id="inbox">
+            <div class="panel-head">
+              <div><p class="eyebrow">04 / OPEN LOOPS</p><h2>Thoughts to <em>return to.</em></h2></div>
+              <span class="count-ring" id="inbox-badge">0</span>
+            </div>
+            <p class="panel-intro">You don't need to solve everything when it first appears. Preserve it, then revisit it.</p>
+            <div id="thought-list" class="thought-list"><p class="empty">Loading your thought inbox…</p></div>
+            <a href="/capture?mode=thought" class="subtle-button link-block">Write something down <span aria-hidden="true">↗</span></a>
+          </section>
+        </div>
+
+        <div class="lower-grid">
+          <section class="panel guidance-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">05 / YOUR OPERATING RULES</p><h2>Work with <em>your brain.</em></h2></div>
+            </div>
+            <div class="guidance-list">
+              <div><span class="guidance-number">01</span><p><strong>Make time visible.</strong><span>Set actual deadlines and departure buffers. A time written in a title is not a reminder.</span></p></div>
+              <div><span class="guidance-number">02</span><p><strong>Start before you feel ready.</strong><span>Choose a two-minute opening move, then decide whether to continue.</span></p></div>
+              <div><span class="guidance-number">03</span><p><strong>Stay within 3–4 priorities.</strong><span>Don't turn every idea into an obligation. Capture first, choose later.</span></p></div>
+            </div>
+          </section>
+
+          <section class="panel review-panel" id="reviews">
+            <div class="panel-head">
+              <div><p class="eyebrow">06 / REFLECTION DESK</p><h2>From noise <em>to insight.</em></h2></div>
+              <a href="/capture#ai-review-title" class="quiet-link">Full review desk ↗</a>
+            </div>
+            <p class="panel-intro">GPT analyses are drafts to inspect, not judgments or new commitments.</p>
+            <div id="ai-preview" class="review-preview"><p class="empty">No saved AI reviews yet.</p></div>
+            <div class="review-meta">
+              <span>Hourly ChatGPT checks: configured</span>
+              <span id="review-updated">Awaiting first saved review</span>
+            </div>
+          </section>
+        </div>
+
+        <section class="goals-strip" id="goals" aria-label="Your longer-term goals">
+          <div><p class="eyebrow">THE BIG PICTURE</p><h2>Keep the direction.</h2></div>
+          <div id="goal-chips" class="goal-chips"></div>
+        </section>
+
+        <div id="global-status" class="global-status" role="status"></div>
+        <footer><span>CONTROL <span class="foot-bullet">◦</span> YOUR SOURCE OF TRUTH</span><span>Tasks &amp; thoughts sync across devices. No automatic reminders yet.</span></footer>
+      </section>
+    </main>
+  </div>
+  <script src="/assets/dashboard.js" defer></script>
+</body>
+</html>
