@@ -52,6 +52,7 @@
             <p class="subline" id="today-long">A quieter way to make progress.</p>
           </div>
           <div class="hero-aside">
+            <div class="hero-day-tag" id="hero-day-tag">TODAY</div>
             <div class="hero-clock" id="local-time" aria-label="Local time">--:--</div>
             <div class="hero-zone" id="local-zone">Your local time</div>
             <a class="button button-dark main-capture" href="/capture?mode=thought"><span aria-hidden="true">＋</span> Capture a thought</a>
@@ -70,7 +71,7 @@
               <div><p class="eyebrow">FIRST THINGS FIRST</p><h2>Do this <em>next.</em></h2></div>
               <a href="/capture?mode=task" class="quiet-link">+ Add a task</a>
             </div>
-            <p class="panel-intro">Only real deadlines create urgency. Start with one thing.</p>
+            <p class="panel-intro">A little progress is enough. Choose one action.</p>
             <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
             <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
             <div class="task-heading secondary-heading"><span>Important, no set time</span><small id="undated-count"></small></div>
@@ -173,6 +174,12 @@
         </section>
 
         <div id="global-status" class="global-status" role="status"></div>
+        <nav class="mobile-dock" aria-label="Quick navigation">
+          <a href="/app" aria-current="page"><span aria-hidden="true">⌂</span><small>Home</small></a>
+          <a href="#attention"><span aria-hidden="true">☑</span><small>Tasks</small></a>
+          <a class="dock-capture" href="/capture?mode=thought"><span aria-hidden="true">＋</span><small>Capture</small></a>
+          <a href="#calendar-panel"><span aria-hidden="true">▦</span><small>Calendar</small></a>
+        </nav>
         <footer><span>CONTROL <span class="foot-bullet">◦</span> YOUR SOURCE OF TRUTH</span><span>Tasks &amp; thoughts sync across devices. No automatic reminders yet.</span></footer>
       </section>
     </main>
