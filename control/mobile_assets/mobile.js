@@ -277,3 +277,8 @@ $("copy-digest").addEventListener("click",async()=>{
 selectMode(mode);
 request("/mobile/me").then(workspace).catch(lockView);
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/service-worker.js").catch(()=>{}));
+
+if(["#memory-search-form","#ai-review-title","#processing-cards","#link-list"].includes(location.hash)){
+ const advanced=document.getElementById("advanced-tools");
+ if(advanced)advanced.open=true;
+}
