@@ -1,13 +1,13 @@
 {
   "id": "/app",
-  "name": "Control — Quick Capture",
+  "name": "Control — Personal Dashboard",
   "short_name": "Control",
-  "description": "Private task and thought inbox for Control.",
+  "description": "Private dashboard for tasks, calendar, thoughts and focus.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#10141b",
-  "theme_color": "#10141b",
+  "background_color": "#f5f5f2",
+  "theme_color": "#f5f5f2",
   "icons": [
     {
       "src": "/assets/icon-192.png",
@@ -30,10 +30,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Capture thought",
+      "name": "Capture a thought",
       "short_name": "Thought",
-      "description": "Open the raw thought inbox",
-      "url": "/app?mode=thought",
+      "description": "Save your original thoughts",
+      "url": "/capture?mode=thought",
       "icons": [
         {
           "src": "/assets/icon-192.png",
@@ -43,10 +43,10 @@
       ]
     },
     {
-      "name": "New task",
+      "name": "Add a task",
       "short_name": "Task",
-      "description": "Capture a task in Control",
-      "url": "/app?mode=task",
+      "description": "Write a new Control task",
+      "url": "/capture?mode=task",
       "icons": [
         {
           "src": "/assets/icon-192.png",
