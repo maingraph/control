@@ -162,3 +162,92 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
 .goals-strip.hidden{display:none}
 @media(max-width:780px){.dashboard-grid{grid-template-columns:1fr}.secondary-stats{gap:12px}.capture-ribbon{padding:19px 20px}}
 @media(max-width:540px){.dashboard-header h1{font-size:49px}.secondary-stats{gap:8px}.secondary-stats .stat{gap:5px}.secondary-stats .stat:not(:last-child){padding-right:9px}.secondary-stats .stat-number{font-size:16px}.secondary-stats .stat strong{font-size:10px}.capture-ribbon{margin:12px 0}.capture-ribbon h2{font-size:19px}.capture-ribbon .button{font-size:11px;padding:10px}.more-content .panel{border:0;padding:10px 2px}}
+
+
+/* Fold-first mobile refinement: never compete with the narrow cover display. */
+.hero-day-tag,.mobile-dock{display:none}
+@media (max-width:620px){
+  html{scroll-padding-top:16px;scroll-padding-bottom:96px}
+  body{overflow-x:hidden}
+  .shell{padding-inline:clamp(14px,4.4vw,20px)}
+  .topbar{min-height:62px;margin-bottom:19px;gap:8px}
+  .topnav{display:none}
+  .wordmark{gap:9px;letter-spacing:.1em}
+  .brand-symbol{width:34px;height:34px;border-radius:11px}
+  .top-actions{gap:7px}
+  .icon-button{width:35px;height:35px;font-size:17px}
+  .text-button{font-size:11px;padding:7px 2px}
+  .dashboard-header{display:flex;flex-direction:column-reverse;align-items:stretch;gap:22px;margin-bottom:18px}
+  .hero-aside{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    grid-template-rows:auto auto;align-items:center;column-gap:10px;
+    padding:18px 20px;background:var(--button);color:var(--buttontext);
+    border-radius:20px;text-align:left;min-width:0
+  }
+  .hero-day-tag{display:block;grid-column:1;grid-row:1/3;font-size:12px;letter-spacing:.16em;font-weight:800;line-height:1.45}
+  .hero-clock{grid-column:2;grid-row:1;font-size:clamp(25px,7.4vw,34px);line-height:1;font-weight:780;letter-spacing:-.06em;text-align:right;white-space:nowrap}
+  .hero-zone{grid-column:2;grid-row:2;color:inherit;opacity:.64;font-size:10px;line-height:1.3;margin:5px 0 0;text-align:right;white-space:nowrap}
+  .hero-aside .main-capture{display:none}
+  .dashboard-header h1{font-size:clamp(42px,11.3vw,59px);line-height:.96;letter-spacing:-.07em;margin:10px 0 12px}
+  .dashboard-header h1 br{display:none}
+  .dashboard-header h1 em{white-space:nowrap}
+  .dashboard-header .eyebrow{font-size:9px}
+  .dashboard-header .subline{font-size:12px;line-height:1.4}
+  .secondary-stats{display:flex;flex-wrap:nowrap;margin:0 0 15px;gap:0;align-items:stretch}
+  .secondary-stats .stat{flex:1 1 0;min-width:0;padding:5px 7px 6px 9px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+  .secondary-stats .stat:first-child{padding-left:1px}
+  .secondary-stats .stat:not(:last-child){padding-right:7px;border-right:1px solid var(--line)}
+  .secondary-stats .stat-number{font-size:20px;line-height:1.1;min-width:0}
+  .secondary-stats .stat strong{font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+  .dashboard-grid{grid-template-columns:minmax(0,1fr);gap:13px}
+  .panel{border-radius:20px;padding:19px}
+  .attention-panel{padding:22px 18px;border-width:1px}
+  .attention-panel h2{font-size:31px}
+  .panel-head{gap:9px}
+  .panel-head .quiet-link{white-space:nowrap;font-size:11px;flex-shrink:0}
+  .panel-intro{margin-bottom:15px}
+  .task-heading{margin-bottom:9px}
+  .secondary-heading{margin-top:15px;padding-top:12px}
+  .task-card{gap:12px;padding:13px 12px;border-radius:13px}
+  .task-title{font-size:13px;line-height:1.4}
+  .task-info{min-width:0}
+  .task-meta{font-size:10px}
+  .task-card .pill{font-size:10px;padding:4px 6px}
+  .done-button{width:26px;height:26px;min-width:26px}
+  .calendar-panel{padding:21px 17px}
+  .cal-day{min-height:42px}
+  .capture-ribbon{padding:17px;gap:10px;border-radius:18px}
+  .capture-ribbon h2{font-size:19px;line-height:1.2}
+  .capture-ribbon p:last-child{font-size:11px}
+  .capture-ribbon .button{padding:10px 13px;min-width:0}
+  .more-section summary{min-height:68px}
+  .mobile-dock{
+    display:flex;position:fixed;z-index:20;left:50%;transform:translateX(-50%);
+    bottom:calc(9px + env(safe-area-inset-bottom,0px));
+    width:min(calc(100% - 24px),420px);align-items:stretch;justify-content:space-around;
+    padding:6px;background:var(--panel);color:var(--ink);
+    border:1px solid var(--line);border-radius:24px;
+    box-shadow:0 10px 32px #0003
+  }
+  .mobile-dock a{display:flex;flex:1 1 0;min-width:0;min-height:56px;
+    flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    color:var(--muted);text-decoration:none;border-radius:18px}
+  .mobile-dock a[aria-current]{color:var(--ink)}
+  .mobile-dock a span{font-size:24px;line-height:1}
+  .mobile-dock a small{font-size:10px;font-weight:720;line-height:1.25}
+  .mobile-dock .dock-capture{background:var(--button);color:var(--buttontext);flex:1.13}
+  .mobile-dock a:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+  footer{padding-bottom:104px}
+}
+@media (max-width:360px){
+  .dashboard-header h1{font-size:clamp(39px,11.1vw,47px)}
+  .hero-clock{font-size:26px}
+  .hero-day-tag{font-size:11px}
+  .capture-ribbon{flex-direction:column;align-items:flex-start}
+  .capture-ribbon .button{width:100%}
+  .task-card .pill{display:none}
+}
+@media (min-width:621px) and (max-width:870px){
+  .dashboard-header h1{font-size:clamp(52px,7vw,76px)}
+  .hero-aside .main-capture{white-space:nowrap}
+}
