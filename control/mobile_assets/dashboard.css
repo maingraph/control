@@ -404,3 +404,12 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
  .task-editor h2{font-size:23px}
  .editor-actions .button{flex:1}
 }
+
+.calendar-unscheduled{border-top:1px solid #333;margin-top:18px;padding-top:11px}
+.calendar-unscheduled summary{list-style:none;display:flex;justify-content:space-between;cursor:pointer;align-items:center;padding:8px 0;font-size:11px;color:#dededb;font-weight:650}
+.calendar-unscheduled summary::-webkit-details-marker{display:none}
+.calendar-unscheduled[open] summary span:last-child{transform:rotate(180deg)}
+.unscheduled-list{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.unscheduled-row{display:flex;align-items:center;justify-content:space-between;gap:9px;font-size:11px;color:#bdbdbd;min-width:0}
+.unscheduled-row span{overflow-wrap:anywhere}
+.unscheduled-row button{flex-shrink:0;padding:7px 9px;border:1px solid #555;border-radius:9px;background:#252525;color:white;font-size:10px}
