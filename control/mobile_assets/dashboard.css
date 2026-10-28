@@ -251,3 +251,13 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
   .dashboard-header h1{font-size:clamp(52px,7vw,76px)}
   .hero-aside .main-capture{white-space:nowrap}
 }
+
+@media(max-width:620px){
+  .hero-day-tag{white-space:pre-line}
+  .dashboard-header h1 br{display:initial}
+  /* A single capture action in the thumb dock is enough. */
+  .capture-ribbon{display:none}
+  #urgent-section + #undated-section .secondary-heading{margin-top:0;padding-top:0;border-top:0}
+  .attention-panel .panel-intro{margin-bottom:17px}
+  .hero-aside{min-height:88px}
+}
