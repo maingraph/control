@@ -124,7 +124,8 @@ def captures():
 def capture(body:inbox.CaptureInput,background_tasks:BackgroundTasks):
     try:
         result=inbox.record(body)
-        background_tasks.add_task(automation.run,3,False)
+        if os.getenv("CONTROL_AUTO_PROCESS_ON_CAPTURE","false").lower()=="true":
+            background_tasks.add_task(automation.run,3,False)
         return result
     except ValueError as exc:raise HTTPException(422,str(exc))
 
