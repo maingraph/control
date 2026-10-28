@@ -184,11 +184,29 @@ function renderThoughts(){
  if(state.captures.length>4){box.append(element("p","helper","+"+(state.captures.length-4)+" more in your inbox"));}
 }
 function calendarDueFor(day){return state.tasks.filter(task=>{const due=taskDue(task);return due&&dayKey(due)===day;});}
+function unplacedTimedTasks(){
+ const mentionsTime=/\b(at\s+\d{1,2}(:\d{2})?|today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+ return state.tasks.filter(t=>!taskDue(t) && ((taskDraft(t)&&taskDraft(t).clarification_question)||mentionsTime.test(t.title)));
+}
+function renderUnscheduled(){
+ const pending=unplacedTimedTasks();
+ display("calendar-unscheduled",pending.length>0);
+ $("unscheduled-count").textContent=pending.length+" task"+(pending.length===1?"":"s")+" need a confirmed date";
+ const list=$("unscheduled-list");list.replaceChildren();
+ for(const item of pending.slice(0,8)){
+  const row=element("div","unscheduled-row");
+  row.append(element("span",null,item.title));
+  const btn=element("button",null,"Set date");
+  btn.type="button";btn.addEventListener("click",()=>openTaskEditor(item));
+  row.append(btn);list.append(row);
+ }
+}
 function renderCalendar(){
  const root=$("calendar-grid");root.replaceChildren();
  const base=new Date(state.month.getFullYear(),state.month.getMonth(),1);
  const year=base.getFullYear(),month=base.getMonth();
  $("calendar-month").textContent=base.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+ renderUnscheduled();
  const startOffset=(base.getDay()+6)%7;
  const totalDays=new Date(year,month+1,0).getDate();
  // Render calendar with a stable six-week grid for quick visual scanning.
