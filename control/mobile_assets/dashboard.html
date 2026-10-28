@@ -60,6 +60,14 @@
           </div>
         </div>
 
+        <section class="ai-overview" aria-labelledby="overview-label">
+          <div class="overview-heading">
+            <span id="overview-label" class="eyebrow">SMART OVERVIEW</span>
+            <span id="overview-meta" class="overview-meta">Live state</span>
+          </div>
+          <p id="overview-text" class="overview-text" aria-live="polite">Loading your Control overview…</p>
+          <p id="overview-question" class="overview-question hidden"></p>
+        </section>
         <section class="stats secondary-stats" aria-label="Current status">
           <div class="stat"><span class="stat-number" id="stat-due">—</span><div><strong>Needs attention</strong><small>Overdue or due in 24 hours</small></div></div>
           <div class="stat"><span class="stat-number" id="stat-open">—</span><div><strong>Open tasks</strong><small>All outstanding commitments</small></div></div>
@@ -107,6 +115,23 @@
           </section>
         </div>
 
+        <dialog id="task-editor" class="task-editor" aria-labelledby="task-editor-title">
+          <form id="task-edit-form">
+            <div class="editor-top"><span class="eyebrow">TASK DETAILS</span><button type="button" class="editor-close" id="task-editor-close" aria-label="Close task editor">×</button></div>
+            <h2 id="task-editor-title">Make it actionable.</h2>
+            <p id="task-editor-source" class="editor-source"></p>
+            <p id="task-editor-suggestion" class="editor-suggestion hidden"></p>
+            <input type="hidden" id="edit-task-id"/>
+            <label for="edit-task-title">Clear task title</label><input id="edit-task-title" maxlength="200" required>
+            <label for="edit-task-project">Project (optional)</label><input id="edit-task-project" maxlength="120">
+            <label for="edit-task-priority">Priority</label><select id="edit-task-priority"><option value="low">Low</option><option value="medium">Normal</option><option value="high">High</option></select>
+            <label for="edit-task-date">Date and time (optional)</label><input id="edit-task-date" type="datetime-local">
+            <label for="edit-task-zone">Timezone for this date</label><select id="edit-task-zone"><option value="device">Phone timezone</option><option value="moscow">Moscow (UTC+3)</option></select>
+            <p class="editor-hint">An unconfirmed date stays off the calendar. Saving a date makes it a real Control deadline; this still won't create an alarm.</p>
+            <div class="editor-actions"><button type="button" id="task-editor-cancel" class="button button-outline">Cancel</button><button type="submit" class="button button-dark" id="task-editor-save">Save task</button></div>
+            <p id="task-editor-error" role="alert" class="editor-error"></p>
+          </form>
+        </dialog>
         <section class="capture-ribbon">
           <div><p class="eyebrow">DON'T HOLD IT IN YOUR HEAD</p><h2>Something on your mind?</h2><p>Save it first. Sort it out later.</p></div>
           <a href="/capture?mode=thought" class="button button-dark">+ Quick capture</a>
