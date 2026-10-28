@@ -43,6 +43,11 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('id="hero-day-tag"',dashboard.text)
         self.assertIn('<h1>JUST<br><em>BEGIN.</em></h1>',dashboard.text)
         self.assertIn('id="day-summary"',dashboard.text)
+        self.assertIn('id="overview-text"',dashboard.text)
+        self.assertIn('id="overview-meta"',dashboard.text)
+        self.assertIn('id="task-editor"',dashboard.text)
+        self.assertIn('id="edit-task-date"',dashboard.text)
+        self.assertIn('id="edit-task-zone"',dashboard.text)
         self.assertIn('class="mobile-dock"',dashboard.text)
         self.assertIn('id="urgent-section"',dashboard.text)
         self.assertIn('id="undated-section"',dashboard.text)
@@ -57,6 +62,10 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('display("urgent-section",urgent.length>0)',dashboard_js)
         self.assertIn('display("undated-section",suggested.length>0)',dashboard_js)
         self.assertIn('control_theme_studio',dashboard_js)
+        self.assertIn('function renderOverview()',dashboard_js)
+        self.assertIn('function openTaskEditor(task)',dashboard_js)
+        self.assertIn('overviewIsFresh(data)',dashboard_js)
+        self.assertIn('source_updated_at!==task.updated_at',dashboard_js)
         self.assertIn('?"light":"dark"',dashboard_js)
         self.assertLess(dashboard.text.index('id="attention"'),dashboard.text.index('id="calendar-panel"'))
         self.assertLess(dashboard.text.index('id="calendar-panel"'),dashboard.text.index('id="plan-more"'))
@@ -97,5 +106,35 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(tasks[0]["title"],"Job application")
         self.assertIn("2026-10-29",tasks[0]["due_at"])
         self.assertEqual(self.client.get("/mobile/inbox").json(),[])
+
+    def test_raw_task_keeps_original_until_confirmed_date(self):
+        self.unlock()
+        task=self.client.post("/mobile/tasks",headers=self.headers,json={
+            "title":"Gamedev interview at 13","priority":"medium"}).json()
+        self.assertIsNone(task["due_at"])
+        self.assertEqual(task["title"],"Gamedev interview at 13")
+        from control import context as context_store
+        import json
+        context_store.set_context("ai_task_"+task["id"].replace("-",""),json.dumps({
+            "status":"draft","source_task_id":task["id"],
+            "source_updated_at":task["updated_at"],
+            "proposed_title":"Attend game-development interview",
+            "proposed_project":None,"proposed_priority":"medium",
+            "suggested_due_at":None,
+            "clarification_question":"Which day is the 13:00 interview?",
+            "reason":"Time is supplied but date is not"
+        }))
+        # AI draft does not silently change a committed task or calendar date.
+        before=self.client.get("/mobile/tasks").json()[0]
+        self.assertEqual(before["title"],"Gamedev interview at 13")
+        self.assertIsNone(before["due_at"])
+        edited=self.client.patch("/mobile/tasks/"+task["id"],headers=self.headers,json={
+            "title":"Attend game-development interview","priority":"medium",
+            "due_at":"2026-10-29T13:00:00+03:00",
+            "notes":"Original task: Gamedev interview at 13"})
+        self.assertEqual(edited.status_code,200,edited.text)
+        self.assertEqual(edited.json()["title"],"Attend game-development interview")
+        self.assertIn("2026-10-29",edited.json()["due_at"])
+        self.assertIn("Original task:",edited.json()["notes"])
 
 if __name__=="__main__":unittest.main()
