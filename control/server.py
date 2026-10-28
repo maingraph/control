@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 import logging
 from fastapi import FastAPI
 from mcp.server.fastmcp import FastMCP
-from . import db, context as ctx, inbox, memory
+from . import db, context as ctx, inbox, memory, automation
 from .api import create_app
 from .models import TaskCreate,TaskPatch
 mcp=FastMCP("Control",stateless_http=True,json_response=True,streamable_http_path="/")
@@ -37,7 +37,9 @@ def list_control_inbox(status:str="inbox")->list[dict]:
 @mcp.tool()
 def capture_control_thought(text:str,kind:str="thought",source:str="assistant")->dict:
     """Store the user's original thought without interpreting or rewriting it."""
-    return inbox.record(inbox.CaptureInput(text=text,kind=kind,source=source))
+    result=inbox.record(inbox.CaptureInput(text=text,kind=kind,source=source))
+    automation.run(3,False)
+    return result
 @mcp.tool()
 def review_control_capture(capture_id:str,status:str="reviewed")->dict:
     """Set an explicitly reviewed inbox entry to reviewed, archived, or inbox."""
@@ -75,15 +77,24 @@ def decide_control_link(link_id:str,status:str)->dict:
     """Only after explicit user instruction, mark a proposed link confirmed or rejected."""
     return memory.decide_link(link_id,memory.LinkDecision(status=status)) or {"error":"not found"}
 @mcp.tool()
+def read_control_processing_feed()->dict:
+    """Read generated in-app review cards, daily/weekly briefings, and processing health."""
+    return {"status":automation.status(),"cards":automation.cards(30)}
+@mcp.tool()
+def run_control_processing_now()->dict:
+    """Process queued thoughts and refresh current daily and weekly snapshots when requested."""
+    return automation.run(12,True)
+@mcp.tool()
 def export_control_data()->dict:
     """Portable export with event history."""
-    return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")}}
+    return {"format":"control.full_export.v3","tasks":db.export(),"context":ctx.list_context(),"inbox":inbox.export(),"memory":{"nodes":memory.get_nodes(500),"links":memory.links("all")},"automation":automation.export()}
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     db.init()
     ctx.ensure()
     inbox.init()
     memory.init()
+    automation.init()
     try:
         indexed=memory.index_pending(500)
         logging.getLogger("control.memory").info("Semantic index ready: %s indexed, %s remaining",indexed["indexed"],indexed["remaining"])
