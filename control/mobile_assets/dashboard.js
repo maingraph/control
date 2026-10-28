@@ -37,7 +37,8 @@ function unlockView(){
 function renderClock(){
  const d=now();
  $("local-time").textContent=hhmm(d);
- $("local-zone").textContent="Local time · "+(Intl.DateTimeFormat().resolvedOptions().timeZone||"device");
+ $("local-zone").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone||"Local";
+ $("hero-day-tag").textContent=d.toLocaleDateString(undefined,{weekday:"long"}).toUpperCase()+"\n"+d.toLocaleDateString(undefined,{month:"short",day:"numeric"}).toUpperCase();
  $("today-long").textContent=dateLong(d)+" · One step at a time.";
 }
 function taskDue(task){if(!task.due_at)return null;const date=new Date(task.due_at);return Number.isNaN(+date)?null:date;}
@@ -68,7 +69,7 @@ function taskCard(task,highlight=false){
  info.append(element("span","task-title",task.title));
  info.append(element("small","task-meta",[task.project||"Unsorted",dueLabel(task)].join(" · ")));
  const due=taskDue(task);
- const tag=element("span","pill"+(due&&(+due-Date.now())<0?" alert":""),due?"Due":"P"+(task.priority==="high"?"1":task.priority==="low"?"3":"2"));
+ const tag=element("span","pill"+(due&&(+due-Date.now())<0?" alert":""),due?"Due":(task.priority==="high"?"High":task.priority==="low"?"Low":"Normal"));
  row.append(complete,info,tag);return row;
 }
 function renderTaskGroup(target,tasks,empty,highlight=false){
@@ -81,13 +82,22 @@ function renderTasks(){
  const ordered=[...state.tasks].sort(taskSort);
  const urgent=ordered.filter(t=>{const d=taskDue(t);return d&&(d.getTime()-current)<=86400000;});
  const undatedHigh=ordered.filter(t=>!taskDue(t)&&t.priority==="high");
+ const alternatives=ordered.filter(t=>!taskDue(t));
+ const suggested=undatedHigh.length?undatedHigh:alternatives.slice(0,1);
  $("stat-due").textContent=urgent.length;
  $("stat-open").textContent=state.tasks.length;
  $("urgent-count").textContent=urgent.length+" items";
- $("undated-count").textContent=undatedHigh.length+" items";
- renderTaskGroup("urgent-list",urgent.slice(0,5),"Nothing overdue or due in the next 24 hours.",true);
- renderTaskGroup("undated-list",undatedHigh.slice(0,4),"No high-priority undated tasks.",false);
- renderTaskGroup("all-task-list",ordered,"No open tasks. You're up to date.");
+ $("undated-count").textContent=suggested.length+" items";
+ $("undated-heading").textContent=undatedHigh.length?"Important, no set time":"Choose one when ready";
+ display("urgent-section",urgent.length>0);
+ display("undated-section",suggested.length>0);
+ renderTaskGroup("urgent-list",urgent.slice(0,4),"",true);
+ renderTaskGroup("undated-list",suggested.slice(0,3),"",false);
+ renderTaskGroup("all-task-list",ordered,"Nothing left to do. You're up to date.");
+ if(!urgent.length&&!suggested.length){
+   $("urgent-section").classList.remove("hidden");
+   renderTaskGroup("urgent-list",[],"No immediate commitments. Your day is yours to plan.");
+ }
  const select=$("focus-task");const previous=select.value;select.replaceChildren();
  const placeholder=element("option",null,"Choose an existing task (optional)");placeholder.value="";select.append(placeholder);
  ordered.forEach(t=>{const option=element("option",null,t.title);option.value=t.id;select.append(option);});
