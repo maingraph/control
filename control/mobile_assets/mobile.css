@@ -81,3 +81,11 @@ textarea:focus,input:focus,select:focus{box-shadow:0 0 0 3px #ffffff17}
 .return-home{margin-left:auto;color:#f4f4f4;font-size:12px;text-decoration:none;border:1px solid #555;padding:9px 12px;border-radius:20px;white-space:nowrap}
 header{gap:10px}
 @media(max-width:480px){.brand small{display:none}.return-home{font-size:11px;padding:8px 9px}}
+
+.advanced-section{margin:18px 0 0;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.advanced-section>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:15px;align-items:center;padding:17px 21px;font-size:14px;font-weight:750}
+.advanced-section>summary::-webkit-details-marker{display:none}
+.advanced-section>summary small{font-size:11px;color:var(--muted);font-weight:400}
+.advanced-content{padding:0 12px 15px}
+.advanced-content>.panel:first-child{margin-top:0}
+@media(max-width:580px){.advanced-section>summary{align-items:flex-start;flex-direction:column;gap:3px}.advanced-content{padding:0 5px 12px}}
