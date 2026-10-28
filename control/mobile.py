@@ -9,10 +9,10 @@ import os
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
-from . import db, inbox, memory
+from . import db, inbox, memory, automation
 from .models import TaskCreate,TaskPatch
 
 router=APIRouter()
@@ -108,9 +108,10 @@ def modify_task(task_id:str,body:TaskPatch):
     return result
 
 @router.post("/mobile/tasks/{task_id}/move-to-thought",dependencies=[Depends(authorized)])
-def move_to_thought(task_id:str):
+def move_to_thought(task_id:str,background_tasks:BackgroundTasks):
     try:
         result=inbox.convert_task_to_thought(task_id)
+        if result:background_tasks.add_task(automation.run,3,False)
         if result is None:raise HTTPException(404,"Task not found")
         return result
     except ValueError as exc:raise HTTPException(409,str(exc))
@@ -120,8 +121,11 @@ def captures():
     return inbox.listing("inbox",100)
 
 @router.post("/mobile/capture",status_code=201,dependencies=[Depends(authorized)])
-def capture(body:inbox.CaptureInput):
-    try:return inbox.record(body)
+def capture(body:inbox.CaptureInput,background_tasks:BackgroundTasks):
+    try:
+        result=inbox.record(body)
+        background_tasks.add_task(automation.run,3,False)
+        return result
     except ValueError as exc:raise HTTPException(422,str(exc))
 
 @router.patch("/mobile/inbox/{capture_id}",dependencies=[Depends(authorized)])
@@ -134,6 +138,14 @@ def review(capture_id:str,body:inbox.CaptureStatus):
 class MemorySearch(BaseModel):
     query:str=Field(min_length=1,max_length=1000)
     limit:int=Field(default=8,ge=1,le=20)
+
+@router.get("/mobile/automation",dependencies=[Depends(authorized)])
+def automation_dashboard():
+    return {"status":automation.status(),"cards":automation.cards(30)}
+
+@router.post("/mobile/automation/run",dependencies=[Depends(authorized)])
+def automation_manual_run():
+    return automation.run(10,True)
 
 @router.get("/mobile/memory/status",dependencies=[Depends(authorized)])
 def memory_health():return memory.status()
