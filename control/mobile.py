@@ -192,6 +192,19 @@ def save_daily_plan(key:str,body:DailyPlanValue):
     from . import context
     return context.set_context(key,body.value)
 
+class DeviceTimezone(BaseModel):
+    timezone: str = Field(min_length=3,max_length=90)
+
+@router.post("/mobile/device-timezone",dependencies=[Depends(authorized)])
+def report_device_timezone(body:DeviceTimezone):
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    from . import context
+    try:
+        ZoneInfo(body.timezone)
+    except (ZoneInfoNotFoundError,ValueError):
+        raise HTTPException(422,"Unknown IANA timezone")
+    return context.set_context("device_timezone",body.timezone)
+
 @router.get("/mobile/context",dependencies=[Depends(authorized)])
 def planning_context():
     from . import context
