@@ -203,15 +203,19 @@ async function loadDashboard(){
  if(outcomes[1].status==="fulfilled")state.captures=outcomes[1].value;else failures.push("inbox");
  if(outcomes[2].status==="fulfilled")state.context=outcomes[2].value.records||{};else failures.push("context");
  renderTasks();renderThoughts();renderCalendar();renderGoals();renderAnalyses();restoreDayPlan();
+ const urgentCount=state.tasks.filter(t=>{const d=taskDue(t);return d&&d.getTime()-Date.now()<=86400000;}).length;
+ $("day-summary").textContent=urgentCount
+  ? urgentCount+" due soon · "+state.tasks.length+" open"
+  : state.tasks.length+" open · No deadlines in 24h";
  message(failures.length?"Some Control data is temporarily unavailable: "+failures.join(", "):"");
 }
 function setTheme(theme){
  document.documentElement.dataset.theme=theme;
  $("theme-toggle").textContent=theme==="dark"?"☼":"◐";
  $("theme-toggle").setAttribute("aria-label",theme==="dark"?"Switch to light mode":"Switch to dark mode");
- try{localStorage.setItem("control_theme",theme);}catch{}
+ try{localStorage.setItem("control_theme_studio",theme);}catch{}
 }
-try{setTheme(localStorage.getItem("control_theme")==="dark"?"dark":"light");}catch{setTheme("light");}
+try{setTheme(localStorage.getItem("control_theme_studio")==="light"?"light":"dark");}catch{setTheme("dark");}
 $("theme-toggle").addEventListener("click",()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark"));
 $("unlock-form").addEventListener("submit",async ev=>{
  ev.preventDefault();const submit=ev.currentTarget.querySelector("button");submit.disabled=true;$("login-error").textContent="";
