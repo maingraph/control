@@ -15,7 +15,7 @@ async function request(url,options={}){
  return data;
 }
 function lockView(){show("workspace",false);show("locked",true);show("lock",false);}
-function workspace(){show("locked",false);show("workspace",true);show("lock",true);$("access").value="";refresh();refreshMemory();refreshProcessing();}
+function workspace(){show("locked",false);show("workspace",true);show("lock",true);$("access").value="";refresh();refreshMemory();refreshProcessing();refreshAIReviews();}
 function selectMode(next){
  mode=next;
  $("thought-tab").classList.toggle("active",next==="thought");
@@ -194,6 +194,46 @@ $("memory-search-form").addEventListener("submit",async event=>{
  }catch(e){memoryMessage("Search unavailable: "+e.message,true);}
  finally{btn.disabled=false;}
 });
+
+
+function renderAIReview(data){
+ const records=data.records||{};
+ const reviews=Object.entries(records).filter(([key])=>/^ai_analysis_[a-f0-9]{32}$/.test(key))
+  .map(([key,record])=>{
+   try{const analysis=JSON.parse(record.value);return {key,analysis,updated:record.updated_at};}
+   catch{return null;}
+  }).filter(Boolean).sort((a,b)=>b.updated.localeCompare(a.updated));
+ const list=$("ai-review-list");list.replaceChildren();
+ $("ai-review-count").textContent="("+reviews.length+")";
+ if(!reviews.length){
+  const placeholder=document.createElement("p");placeholder.className="empty";
+  placeholder.textContent="No ChatGPT analysis saved yet. Captured thoughts remain available for scheduled review.";
+  list.append(placeholder);return;
+ }
+ for(const {analysis,updated} of reviews.slice(0,30)){
+  const row=document.createElement("article");row.className="item ai-review-item";
+  const body=document.createElement("div");body.className="text";
+  const heading=document.createElement("p");heading.className="ai-review-title";heading.textContent="Draft analysis · "+ago(updated);
+  body.append(heading);
+  const original=document.createElement("p");original.textContent=analysis.original_text||"Original thought (see inbox)";
+  original.className="ai-review-original";body.append(original);
+  for(const [label,value] of [["Observation",analysis.observed],["Possible interpretation",analysis.tentative_interpretation],
+                              ["Suggested next step",analysis.proposed_next_step]]){
+   if(!value)continue;const line=document.createElement("p");line.className="ai-review-detail";
+   const strong=document.createElement("strong");strong.textContent=label+": ";
+   line.append(strong,document.createTextNode(typeof value==="string"?value:JSON.stringify(value)));body.append(line);
+  }
+  const caveat=document.createElement("small");caveat.textContent="Not confirmed · Review before acting";body.append(caveat);
+  row.append(body);list.append(row);
+ }
+}
+async function refreshAIReviews(){
+ try{
+  const data=await request("/mobile/context");renderAIReview(data);
+  $("ai-review-status").textContent="AI reasoning runs on a scheduled ChatGPT task, not in Railway. Manual review is required.";
+ }catch(e){$("ai-review-status").textContent="Couldn't load AI reviews: "+e.message;}
+}
+$("ai-review-refresh").addEventListener("click",refreshAIReviews);
 
 $("draft").addEventListener("keydown",e=>{if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){$("capture-form").requestSubmit();}});
 $("copy-digest").addEventListener("click",async()=>{
