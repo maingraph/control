@@ -150,7 +150,9 @@ function signatureRows(records){
 function overviewIsFresh(data){
  if(!data||!data.source_versions)return false;
  const values=data.source_versions;
- return JSON.stringify(values.tasks)===JSON.stringify(signatureRows(state.tasks))
+ return Array.isArray(values.done)
+  &&JSON.stringify(values.tasks)===JSON.stringify(signatureRows(state.tasks))
+  &&JSON.stringify(values.done)===JSON.stringify(signatureRows(state.recentDone))
   &&JSON.stringify(values.captures)===JSON.stringify(signatureRows(state.captures));
 }
 function renderOverview(){
