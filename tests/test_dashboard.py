@@ -26,6 +26,9 @@ class DashboardTests(unittest.TestCase):
         res=self.client.post("/mobile/login",json={"access_key":"test_"+"K"*48},headers=self.headers)
         self.assertEqual(res.status_code,200,res.text)
     def test_dashboard_and_legacy_quick_capture_routes(self):
+        redirected=self.client.get("/",follow_redirects=False)
+        self.assertEqual(redirected.status_code,307)
+        self.assertEqual(redirected.headers["location"],"/app")
         dashboard=self.client.get("/app")
         self.assertEqual(dashboard.status_code,200)
         self.assertIn('id="calendar-grid"',dashboard.text)
