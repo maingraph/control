@@ -72,10 +72,14 @@
               <a href="/capture?mode=task" class="quiet-link">+ Add a task</a>
             </div>
             <p class="panel-intro">A little progress is enough. Choose one action.</p>
-            <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
-            <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
-            <div class="task-heading secondary-heading"><span>Important, no set time</span><small id="undated-count"></small></div>
-            <div id="undated-list" class="compact-list"></div>
+            <div id="urgent-section">
+              <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
+              <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
+            </div>
+            <div id="undated-section">
+              <div class="task-heading secondary-heading"><span id="undated-heading">Important, no set time</span><small id="undated-count"></small></div>
+              <div id="undated-list" class="compact-list"></div>
+            </div>
             <button type="button" id="show-all-tasks" class="subtle-button">See all open tasks <span aria-hidden="true">↗</span></button>
             <div id="all-task-drawer" class="drawer hidden"><div class="task-heading">All open tasks</div><div id="all-task-list" class="compact-list"></div></div>
           </section>
