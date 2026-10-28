@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10141b"><meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#111111"><meta name="color-scheme" content="dark">
 <meta name="description" content="A private inbox for thoughts and tasks.">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/assets/control-icon.svg" type="image/svg+xml">
@@ -9,7 +9,7 @@
 <title>Control · Quick Capture</title></head>
 <body>
 <div class="shell">
-<header><div class="brand"><span class="brandmark">C</span><div><strong>CONTROL</strong><small>Capture first. Organize later.</small></div></div><button type="button" id="lock" class="textbtn hidden">Lock</button></header>
+<header><div class="brand"><span class="brandmark">C</span><div><strong>CONTROL</strong><small>Capture first. Organize later.</small></div></div><a class="return-home" href="/app">← Dashboard</a><button type="button" id="lock" class="textbtn hidden">Lock</button></header>
 <main>
 <section id="locked" class="centered hidden"><div class="panel">
 <div class="hero-emoji" aria-hidden="true">✦</div><h1>Your mind, organized.</h1><p>Unlock your private Control inbox. Your access key stays out of browser storage; a secure session cookie keeps you signed in.</p>
@@ -35,7 +35,7 @@
 <section class="panel tasks-panel"><div class="aside-head"><div><p class="eyebrow">WHAT MATTERS NEXT</p><h2>Open tasks <span id="task-count"></span></h2></div><button type="button" id="copy-digest" class="textbtn">Ask ChatGPT to digest</button></div><div id="task-list" class="itemlist"><p class="empty">Loading tasks…</p></div></section>
 <section class="panel ai-review-panel" aria-labelledby="ai-review-title">
 <div class="aside-head"><div><p class="eyebrow">CHATGPT REVIEW</p><h2 id="ai-review-title">AI thought analyses <span id="ai-review-count"></span></h2><p class="sub">Thoughtful draft interpretations from the scheduled assistant, never automatic obligations.</p></div><button type="button" id="ai-review-refresh" class="textbtn">Refresh</button></div>
-<p class="micro" id="ai-review-status" role="status">Scheduled review runs every six hours. Analysis requires the ChatGPT connector to be available during that run.</p>
+<p class="micro" id="ai-review-status" role="status">Scheduled review runs hourly. Analysis requires the ChatGPT connector to be available during that run.</p>
 <div id="ai-review-list" class="itemlist"><p class="empty">No ChatGPT reviews loaded yet.</p></div>
 </section>
 <section class="panel processing-panel">
