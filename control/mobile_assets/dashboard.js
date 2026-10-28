@@ -78,7 +78,7 @@ function renderOverview(){
  const record=state.context.ai_latest_overview;
  let data=null;
  if(record){try{data=JSON.parse(record.value);}catch{}}
- const pending=state.tasks.filter(x=>!taskDue(x)&&/\\b(at\\s+\\d{1,2}(:\\d{2})?|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b/i.test(x.title));
+ const pending=state.tasks.filter(x=>!taskDue(x)&&/\b(at\s+\d{1,2}(:\d{2})?|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(x.title));
  const fallback=state.tasks.length+" open task"+(state.tasks.length===1?"":"s")+
   " · "+state.captures.length+" unreviewed thought"+(state.captures.length===1?"":"s")+".";
  const stale=Boolean(data&&!overviewIsFresh(data));
@@ -318,7 +318,7 @@ $("task-edit-form").addEventListener("submit",async ev=>{
  }
  const originalNote=task.title!==title&&!task.notes.includes("Original task: "+task.title)
   ?"Original task: "+task.title:"";
- const notes=[task.notes||"",originalNote].filter(Boolean).join("\\n");
+ const notes=[task.notes||"",originalNote].filter(Boolean).join("\n");
  const patch={title,project:$("edit-task-project").value.trim()||null,
   priority:$("edit-task-priority").value,due_at,notes};
  const button=$("task-editor-save");button.disabled=true;$("task-editor-error").textContent="";
