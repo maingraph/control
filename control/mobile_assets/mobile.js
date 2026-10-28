@@ -15,7 +15,7 @@ async function request(url,options={}){
  return data;
 }
 function lockView(){show("workspace",false);show("locked",true);show("lock",false);}
-function workspace(){show("locked",false);show("workspace",true);show("lock",true);$("access").value="";refresh();refreshMemory();}
+function workspace(){show("locked",false);show("workspace",true);show("lock",true);$("access").value="";refresh();refreshMemory();refreshProcessing();}
 function selectMode(next){
  mode=next;
  $("thought-tab").classList.toggle("active",next==="thought");
@@ -92,9 +92,53 @@ $("capture-form").addEventListener("submit",async event=>{
     await request("/mobile/tasks",{method:"POST",body:JSON.stringify({title,notes:raw===first?"":raw,priority:$("priority").value,project:$("project").value.trim()||null,due_at})});
   }
   $("draft").value="";if(mode==="task")$("due").value="";setMessage(mode==="thought"?"✓ Saved as THOUGHT. Look for it in Thought inbox →":"✓ Saved as TASK. It appears in Open tasks below.");
-  await refresh();$("draft").focus();
+  await refresh();await refreshProcessing();$("draft").focus();
  }catch(e){setMessage("Not saved: "+e.message,true);}
  finally{saving=false;$("save").disabled=false;}
+});
+
+async function refreshProcessing(){
+ const box=$("processing-cards");if(!box)return;
+ try{
+  const data=await request("/mobile/automation");
+  const jobCount=Object.fromEntries(data.status.jobs.map(j=>[j.state,j.count]));
+  $("processing-state").textContent="Automatic local processing · "+(jobCount.pending||0)+" pending · "+(jobCount.retry||0)+" retries. No cloud AI model is called.";
+  $("processing-count").textContent="("+data.cards.length+")";
+  box.replaceChildren();
+  if(!data.cards.length){const p=document.createElement("p");p.className="empty";p.textContent="No cards yet. Save a thought to generate a review card, or tap Process now for a planning snapshot.";box.append(p);}
+  data.cards.forEach(card=>{
+   const row=document.createElement("div");row.className="item processing-item";
+   const inner=document.createElement("div");inner.className="text";
+   const heading=document.createElement("p");heading.textContent=card.title;
+   const desc=document.createElement("small");desc.textContent=card.kind.replaceAll("_"," ")+" · "+ago(card.updated_at);
+   const content=document.createElement("div");content.className="card-detail";
+   const payload=card.payload||{};
+   if(card.kind==="capture_review"){
+    const preview=document.createElement("p");preview.textContent=payload.preview||"";content.append(preview);
+    const meta=document.createElement("small");meta.textContent=payload.related?.length
+       ? payload.related.length+" potentially related memories; connections require review."
+       : "No strong semantic neighbors found yet.";content.append(meta);
+   }else{
+    const counts=document.createElement("p");counts.textContent=
+       (payload.open_task_count||0)+" open tasks · "+(payload.thoughts_awaiting_review||0)+" thoughts to review · "+(payload.links_awaiting_confirmation||0)+" links to decide";content.append(counts);
+    if(payload.possible_focus?.length){
+     const ul=document.createElement("ul");
+     payload.possible_focus.forEach(task=>{const li=document.createElement("li");li.textContent=task.title;ul.append(li);});
+     content.append(ul);
+    }
+   }
+   inner.append(heading,desc,content);row.append(inner);box.append(row);
+  });
+ }catch(e){$("processing-state").textContent="Processing feed unavailable: "+e.message;}
+}
+$("process-refresh").addEventListener("click",refreshProcessing);
+$("run-processing").addEventListener("click",async ()=>{
+ const btn=$("run-processing");btn.disabled=true;$("processing-state").textContent="Processing pending items and generating today's overview…";
+ try{const result=await request("/mobile/automation/run",{method:"POST",body:"{}"});
+ $("processing-state").textContent="Processed "+result.processed+" entries. "+result.briefs_created.length+" new briefings.";
+ await refreshProcessing();await refreshMemory();}
+ catch(e){$("processing-state").textContent=e.message;}
+ finally{btn.disabled=false;}
 });
 
 function memoryMessage(message,isError=false){
