@@ -24,7 +24,7 @@
       </nav>
       <div class="top-actions">
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch color theme" title="Switch color theme">◐</button>
-        <button id="lock" class="text-button hidden" type="button">Lock</button>
+        <button id="lock" class="text-button hidden" type="button" aria-hidden="true" tabindex="-1">Lock</button>
       </div>
     </header>
 
@@ -48,7 +48,7 @@
         <div class="dashboard-header">
           <div>
             <p class="eyebrow">TODAY <span class="status-pip" aria-hidden="true"></span> IN CONTROL</p>
-            <h1>JUST<br><em>BEGIN.</em></h1>
+            <h1><span id="hero-primary">JUST</span><br><em id="hero-secondary">BEGIN.</em></h1>
             <p class="subline" id="today-long">Less noise. One next step.</p>
             <p class="day-summary" id="day-summary" aria-live="polite">Loading your priorities…</p>
           </div>
@@ -66,7 +66,7 @@
             <span id="overview-meta" class="overview-meta">Live state</span>
           </div>
           <p id="overview-text" class="overview-text" aria-live="polite">Loading your Control overview…</p>
-          <p id="overview-question" class="overview-question hidden"></p>
+          <p id="overview-insight" class="overview-insight hidden"></p><p id="overview-next-step" class="overview-next-step hidden"></p><p id="overview-question" class="overview-question hidden"></p>
         </section>
         <section class="stats secondary-stats" aria-label="Current status">
           <div class="stat"><span class="stat-number" id="stat-due">—</span><div><strong>Needs attention</strong><small>Overdue or due in 24 hours</small></div></div>
@@ -77,16 +77,16 @@
         <div class="dashboard-grid">
           <section class="panel attention-panel" id="attention">
             <div class="panel-head">
-              <div><p class="eyebrow">THE NEXT MOVE <span aria-hidden="true">/ 01</span></p><h2>Do this <em>next.</em></h2></div>
+              <div><p class="eyebrow">DEADLINES &amp; PRIORITIES <span aria-hidden="true">/ 01</span></p><h2>Your next <em>moves.</em></h2></div>
               <a href="/capture?mode=task" class="quiet-link">+ Add a task</a>
             </div>
-            <p class="panel-intro">One task is enough to begin.</p>
+            <p class="panel-intro">Sorted by real deadlines, importance and current context—not creation order.</p>
             <div id="urgent-section">
               <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
               <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
             </div>
             <div id="undated-section">
-              <div class="task-heading secondary-heading"><span id="undated-heading">Important, no set time</span><small id="undated-count"></small></div>
+              <div class="task-heading secondary-heading"><span id="undated-heading">Other priorities</span><small id="undated-count"></small></div>
               <div id="undated-list" class="compact-list"></div>
             </div>
             <button type="button" id="show-all-tasks" class="subtle-button">See all open tasks <span aria-hidden="true">↗</span></button>
