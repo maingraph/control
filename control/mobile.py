@@ -168,6 +168,25 @@ def pending_links():
 def review_link(link_id:str,body:memory.LinkDecision):
     return memory.decide_link(link_id,body) or (_ for _ in ()).throw(HTTPException(404,"Link not found"))
 
+class DailyPlanValue(BaseModel):
+    value: str=Field(min_length=1,max_length=1500)
+
+@router.put("/mobile/context/{key}",dependencies=[Depends(authorized)])
+def save_daily_plan(key:str,body:DailyPlanValue):
+    import re,json
+    if not re.fullmatch(r"daily_plan_[0-9]{8}",key):
+        raise HTTPException(403,"Only daily start plans can be saved here")
+    try:
+        value=json.loads(body.value)
+        if not isinstance(value,dict) or not value.get("next_action") or len(value["next_action"])>250 or len(value.get("if_then") or "")>250:
+            raise ValueError("A small next action is required")
+        if value.get("task_id") is not None and (not isinstance(value["task_id"],str) or len(value["task_id"])>60):
+            raise ValueError("Invalid task ID")
+    except (ValueError,TypeError,KeyError) as exc:
+        raise HTTPException(422,"Invalid daily plan") from exc
+    from . import context
+    return context.set_context(key,body.value)
+
 @router.get("/mobile/context",dependencies=[Depends(authorized)])
 def planning_context():
     from . import context
@@ -175,11 +194,32 @@ def planning_context():
 
 @router.get("/app")
 def app():
+    response=FileResponse(ASSETS / "dashboard.html",media_type="text/html")
+    response.headers["Cache-Control"]="no-store"
+    response.headers["X-Content-Type-Options"]="nosniff"
+    response.headers["Referrer-Policy"]="no-referrer"
+    response.headers["Content-Security-Policy"]="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+    return response
+
+@router.get("/capture")
+def capture_page():
     response=FileResponse(ASSETS / "index.html",media_type="text/html")
     response.headers["Cache-Control"]="no-store"
     response.headers["X-Content-Type-Options"]="nosniff"
     response.headers["Referrer-Policy"]="no-referrer"
     response.headers["Content-Security-Policy"]="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+    return response
+
+@router.get("/assets/dashboard.css")
+def dashboard_style():
+    response=FileResponse(ASSETS/"dashboard.css",media_type="text/css")
+    response.headers["Cache-Control"]="no-cache"
+    return response
+
+@router.get("/assets/dashboard.js")
+def dashboard_script():
+    response=FileResponse(ASSETS/"dashboard.js",media_type="application/javascript")
+    response.headers["Cache-Control"]="no-cache"
     return response
 
 @router.get("/assets/mobile.css")
