@@ -37,14 +37,14 @@ def init():
 def record(data: CaptureInput):
     text=data.text
     if not text.strip(): raise ValueError("empty capture")
+    from . import automation
+    automation.init()
     now=db.now()
     value={"id":str(uuid.uuid4()),"original_text":text,"kind":data.kind,
            "source":data.source,"status":"inbox","created_at":now,"updated_at":now}
     with db.connect() as c:
         c.execute("INSERT INTO captures(id,original_text,kind,source,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",tuple(value.values()))
         c.execute("INSERT INTO capture_events(capture_id,event,timestamp,payload) VALUES (?,?,?,?)",(value["id"],"created",now,""))
-        from . import automation
-        automation.init()
         automation.queue_capture_in_tx(c,value["id"])
     return value
 def listing(status:State|Literal["all"]="inbox",limit:int=100):
@@ -74,6 +74,8 @@ def convert_task_to_thought(task_id:str)->dict|None:
     Converted tasks are no longer open, but are NOT marked completed.
     """
     init()
+    from . import automation
+    automation.init()
     with db.connect() as conn:
         row=conn.execute("SELECT * FROM tasks WHERE id=?",(task_id,)).fetchone()
         if not row:return None
@@ -88,8 +90,6 @@ def convert_task_to_thought(task_id:str)->dict|None:
                     "original_task_due_at":row["due_at"]}
         conn.execute("INSERT INTO capture_events(capture_id,event,timestamp,payload) VALUES (?,?,?,?)",
                      (identifier,"converted_from_task",t,json.dumps(provenance)))
-        from . import automation
-        automation.init()
         automation.queue_capture_in_tx(conn,identifier)
         conn.execute("UPDATE tasks SET status='converted',updated_at=? WHERE id=?",(t,task_id))
         conn.execute("INSERT INTO events(task_id,action,at,changes) VALUES (?,?,?,?)",
