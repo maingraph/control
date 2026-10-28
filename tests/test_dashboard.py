@@ -40,6 +40,18 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('id="thought-more"',dashboard.text)
         self.assertIn('id="insights-more"',dashboard.text)
         self.assertIn('id="thought-summary-count"',dashboard.text)
+        self.assertIn('id="hero-day-tag"',dashboard.text)
+        self.assertIn('class="mobile-dock"',dashboard.text)
+        self.assertIn('id="urgent-section"',dashboard.text)
+        self.assertIn('id="undated-section"',dashboard.text)
+        responsive_css=self.client.get("/assets/dashboard.css").text
+        self.assertIn("@media (max-width:620px)",responsive_css)
+        self.assertIn(".dashboard-header{display:flex;flex-direction:column-reverse",responsive_css)
+        self.assertIn(".mobile-dock{",responsive_css)
+        self.assertIn("env(safe-area-inset-bottom",responsive_css)
+        dashboard_js=self.client.get("/assets/dashboard.js").text
+        self.assertIn('display("urgent-section",urgent.length>0)',dashboard_js)
+        self.assertIn('display("undated-section",suggested.length>0)',dashboard_js)
         self.assertLess(dashboard.text.index('id="attention"'),dashboard.text.index('id="calendar-panel"'))
         self.assertLess(dashboard.text.index('id="calendar-panel"'),dashboard.text.index('id="plan-more"'))
         self.assertIn("no-store",dashboard.headers.get("cache-control",""))
