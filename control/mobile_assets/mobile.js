@@ -48,13 +48,47 @@ function itemNode(text,meta,actionLabel,action,secondaryLabel=null,secondaryActi
  });actions.append(secondary);}
  content.append(body,details);row.append(content,actions);return row;
 }
+function analysisPrompt(captureId=null){
+ const target=captureId
+   ? "Find the capture with ID "+captureId+" in the raw Control inbox (including archived or reviewed items if needed)."
+   : "Find the pending raw captures in my Control inbox that have not been analyzed.";
+ return "Use my installed Control Connector. "+target+
+ " Read the original thought and existing Control goals and knowledge before drawing conclusions. "+
+ "Separate direct observations from possible interpretations, identify relevant goals and one optional next action, and explain any uncertainty. "+
+ "Keep my original wording. Do NOT treat possible psychological patterns as diagnoses, confirm links, create or complete tasks, or set deadlines without my consent. "+
+ "Save the draft in Control with update_control_context using ai_analysis_<capture ID without hyphens> and update ai_latest_review only when appropriate. "+
+ "Show me a concise result and what needs my approval.";
+}
+function handoffToChatGPT(captureId=null){
+ const prompt=analysisPrompt(captureId);
+ // Open synchronously while this is a real button click, avoiding popup blockers.
+ const opened=window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+  navigator.clipboard.writeText(prompt).then(()=>{
+   setMessage("ChatGPT opened. Paste your copied Control review request there; it does not run automatically.");
+  }).catch(()=>{
+   setMessage("ChatGPT opened, but clipboard copy was blocked. Use the Ask ChatGPT to digest button below to copy, or ask ChatGPT to read your Control inbox.",true);
+  });
+ }else{
+  setMessage("Open ChatGPT and ask it to analyze your Control captures via the connector.",true);
+ }
+ if(!opened)setMessage("Browser may have blocked the new ChatGPT window. Open the ChatGPT link above and paste the request.",true);
+}
+$("analyze-inbox").addEventListener("click",()=>handoffToChatGPT());
+
 async function refresh(){
  try{
   const [inbox,tasks]=await Promise.all([request("/mobile/inbox"),request("/mobile/tasks")]);
   $("inbox-count").textContent="("+inbox.length+")";$("task-count").textContent="("+tasks.length+")";
   $("inbox-list").replaceChildren();
   if(!inbox.length){const p=document.createElement("p");p.className="empty";p.textContent="Your inbox is clear. Capture anything to get started."; $("inbox-list").append(p);}
-  inbox.forEach(x=>$("inbox-list").append(itemNode(x.original_text,(x.kind||"thought")+" · "+ago(x.created_at),"Reviewed",()=>request("/mobile/inbox/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"reviewed"})}))));
+  inbox.forEach(x=>{
+  const row=itemNode(x.original_text,(x.kind||"thought")+" · "+ago(x.created_at),"Reviewed",()=>request("/mobile/inbox/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"reviewed"})}));
+  const actions=row.querySelector(".actions");
+  const ask=document.createElement("button");ask.type="button";ask.className="secondary";ask.textContent="Analyze now";
+  ask.addEventListener("click",()=>handoffToChatGPT(x.id));
+  actions.append(ask);$("inbox-list").append(row);
+ });
   $("task-list").replaceChildren();
   if(!tasks.length){const p=document.createElement("p");p.className="empty";p.textContent="No open tasks yet."; $("task-list").append(p);}
   tasks.forEach(x=>$("task-list").append(itemNode(x.title,[x.project||"Unsorted",x.priority||"medium",x.due_at?"Due "+ago(x.due_at):"No deadline"].join(" · "),"Done",()=>request("/mobile/tasks/"+encodeURIComponent(x.id),{method:"PATCH",body:JSON.stringify({status:"done"})}),"Move to thoughts",()=>request("/mobile/tasks/"+encodeURIComponent(x.id)+"/move-to-thought",{method:"POST",body:"{}"}))));
