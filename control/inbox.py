@@ -43,6 +43,9 @@ def record(data: CaptureInput):
     with db.connect() as c:
         c.execute("INSERT INTO captures(id,original_text,kind,source,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",tuple(value.values()))
         c.execute("INSERT INTO capture_events(capture_id,event,timestamp,payload) VALUES (?,?,?,?)",(value["id"],"created",now,""))
+        from . import automation
+        automation.init()
+        automation.queue_capture_in_tx(c,value["id"])
     return value
 def listing(status:State|Literal["all"]="inbox",limit:int=100):
     if status not in ("inbox","reviewed","archived","all"):raise ValueError("invalid inbox status")
@@ -85,6 +88,9 @@ def convert_task_to_thought(task_id:str)->dict|None:
                     "original_task_due_at":row["due_at"]}
         conn.execute("INSERT INTO capture_events(capture_id,event,timestamp,payload) VALUES (?,?,?,?)",
                      (identifier,"converted_from_task",t,json.dumps(provenance)))
+        from . import automation
+        automation.init()
+        automation.queue_capture_in_tx(conn,identifier)
         conn.execute("UPDATE tasks SET status='converted',updated_at=? WHERE id=?",(t,task_id))
         conn.execute("INSERT INTO events(task_id,action,at,changes) VALUES (?,?,?,?)",
                      (task_id,"converted_to_thought",t,json.dumps({"capture_id":identifier,"previous_status":row["status"]})))
