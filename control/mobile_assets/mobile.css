@@ -89,3 +89,6 @@ header{gap:10px}
 .advanced-content{padding:0 12px 15px}
 .advanced-content>.panel:first-child{margin-top:0}
 @media(max-width:580px){.advanced-section>summary{align-items:flex-start;flex-direction:column;gap:3px}.advanced-content{padding:0 5px 12px}}
+
+/* On a personal Fold, session persists securely; no repeated prominent Lock action. */
+#lock{display:none!important}
