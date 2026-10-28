@@ -94,6 +94,11 @@ def me():
 def tasks():
     return db.listing("open")
 
+@router.get("/mobile/tasks/recent",dependencies=[Depends(authorized)])
+def recent_completed_tasks():
+    """Completed tasks for contextual dashboard summaries, not active work."""
+    return db.listing("done")[:20]
+
 @router.post("/mobile/tasks",status_code=201,dependencies=[Depends(authorized)])
 def add_task(body:TaskCreate):
     return db.create(body)
