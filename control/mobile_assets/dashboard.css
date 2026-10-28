@@ -348,3 +348,25 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
   .hero-clock{font-size:24px}
   .dashboard-header h1{font-size:43px}
 }
+
+
+/* Unfolded Fold workspace: complementary editorial and utility panels. */
+@media(min-width:691px) and (max-width:870px){
+  .shell{padding-inline:22px}
+  .dashboard-header{align-items:center;gap:20px;margin-top:10px}
+  .dashboard-header h1{font-size:clamp(56px,8vw,72px);line-height:.92}
+  .hero-aside{min-width:172px}
+  .dashboard-grid{grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:12px}
+  .attention-panel,.calendar-panel{min-width:0}
+  .attention-panel{padding:22px 19px}
+  .attention-panel h2{font-size:26px}
+  .attention-panel .panel-head{flex-wrap:wrap}
+  .attention-panel .panel-intro{font-size:11px}
+  .attention-panel .task-title{font-size:12px}
+  .attention-panel .task-card{padding:11px 10px;gap:8px}
+  .calendar-panel{padding:21px 15px}
+  .calendar-panel .cal-day{min-height:38px}
+  .calendar-panel .month-header{margin-bottom:17px}
+  .calendar-panel .month-header h2{font-size:25px}
+  .mobile-dock{display:none}
+}
