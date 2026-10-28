@@ -20,7 +20,7 @@
       <nav class="topnav" aria-label="Main navigation">
         <a href="/app" aria-current="page">Overview</a>
         <a href="/capture?mode=thought">Capture</a>
-        <a href="/capture#memory-search-form">Memory</a>
+        <a href="#calendar-panel">Calendar</a>
       </nav>
       <div class="top-actions">
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch color theme" title="Switch color theme">◐</button>
@@ -47,8 +47,8 @@
       <section id="dashboard" class="hidden" aria-label="Control home dashboard">
         <div class="dashboard-header">
           <div>
-            <p class="eyebrow">YOUR CONTROL CENTER <span class="status-pip" aria-hidden="true"></span> CONNECTED</p>
-            <h1>Your day,<br><em>clearly.</em></h1>
+            <p class="eyebrow">TODAY <span class="status-pip" aria-hidden="true"></span> IN CONTROL</p>
+            <h1>One thing<br><em>at a time.</em></h1>
             <p class="subline" id="today-long">A quieter way to make progress.</p>
           </div>
           <div class="hero-aside">
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <section class="stats" aria-label="Current status">
+        <section class="stats secondary-stats" aria-label="Current status">
           <div class="stat"><span class="stat-number" id="stat-due">—</span><div><strong>Needs attention</strong><small>Overdue or due in 24 hours</small></div></div>
           <div class="stat"><span class="stat-number" id="stat-open">—</span><div><strong>Open tasks</strong><small>All outstanding commitments</small></div></div>
           <div class="stat"><span class="stat-number" id="stat-thoughts">—</span><div><strong>Thoughts to process</strong><small>Unreviewed inbox entries</small></div></div>
@@ -67,10 +67,10 @@
         <div class="dashboard-grid">
           <section class="panel attention-panel" id="attention">
             <div class="panel-head">
-              <div><p class="eyebrow">01 / YOUR NEXT MOVES</p><h2>What matters <em>now.</em></h2></div>
+              <div><p class="eyebrow">FIRST THINGS FIRST</p><h2>Do this <em>next.</em></h2></div>
               <a href="/capture?mode=task" class="quiet-link">+ Add a task</a>
             </div>
-            <p class="panel-intro">Only actual due dates count as urgent. An important task with no deadline is shown separately.</p>
+            <p class="panel-intro">Only real deadlines create urgency. Start with one thing.</p>
             <div class="task-heading"><span>Due / overdue</span><small id="urgent-count"></small></div>
             <div id="urgent-list" class="compact-list" aria-live="polite"><p class="empty">Loading your tasks…</p></div>
             <div class="task-heading secondary-heading"><span>Important, no set time</span><small id="undated-count"></small></div>
@@ -81,7 +81,7 @@
 
           <section class="panel calendar-panel" id="calendar-panel">
             <div class="calendar-top">
-              <p class="eyebrow eyebrow-light">02 / THE CALENDAR</p>
+              <p class="eyebrow eyebrow-light">YOUR TIME</p>
               <div class="calendar-nav">
                 <button id="calendar-prev" type="button" aria-label="Previous month">‹</button>
                 <button id="calendar-next" type="button" aria-label="Next month">›</button>
@@ -101,8 +101,14 @@
           </section>
         </div>
 
-        <div class="lower-grid">
-          <section class="panel focus-panel" id="focus">
+        <section class="capture-ribbon">
+          <div><p class="eyebrow">DON'T HOLD IT IN YOUR HEAD</p><h2>Something on your mind?</h2><p>Save it first. Sort it out later.</p></div>
+          <a href="/capture?mode=thought" class="button button-dark">+ Quick capture</a>
+        </section>
+
+        <details class="more-section" id="plan-more">
+          <summary><span><strong>Make a small plan</strong><small>Five-minute start, one next step</small></span><span class="disclosure-chevron">⌄</span></summary>
+          <div class="more-content"><section class="panel focus-panel" id="focus">
             <div class="panel-head">
               <div><p class="eyebrow">03 / GET UNSTUCK</p><h2>A small start <em>counts.</em></h2></div>
               <span class="number-tag">05 MIN</span>
@@ -122,9 +128,11 @@
               <div class="micro-feedback" id="plan-status" role="status"></div>
               <p class="micro-note">Your plan is stored privately. This doesn't create a deadline or notification.</p>
             </form>
-          </section>
-
-          <section class="panel inbox-panel" id="inbox">
+          </section></div>
+        </details>
+        <details class="more-section" id="thought-more">
+          <summary><span><strong>Review thoughts <span id="thought-summary-count"></span></strong><small>Your inbox, when you're ready</small></span><span class="disclosure-chevron">⌄</span></summary>
+          <div class="more-content"><section class="panel inbox-panel" id="inbox">
             <div class="panel-head">
               <div><p class="eyebrow">04 / OPEN LOOPS</p><h2>Thoughts to <em>return to.</em></h2></div>
               <span class="count-ring" id="inbox-badge">0</span>
@@ -132,22 +140,11 @@
             <p class="panel-intro">You don't need to solve everything when it first appears. Preserve it, then revisit it.</p>
             <div id="thought-list" class="thought-list"><p class="empty">Loading your thought inbox…</p></div>
             <a href="/capture?mode=thought" class="subtle-button link-block">Write something down <span aria-hidden="true">↗</span></a>
-          </section>
-        </div>
-
-        <div class="lower-grid">
-          <section class="panel guidance-panel">
-            <div class="panel-head">
-              <div><p class="eyebrow">05 / YOUR OPERATING RULES</p><h2>Work with <em>your brain.</em></h2></div>
-            </div>
-            <div class="guidance-list">
-              <div><span class="guidance-number">01</span><p><strong>Make time visible.</strong><span>Set actual deadlines and departure buffers. A time written in a title is not a reminder.</span></p></div>
-              <div><span class="guidance-number">02</span><p><strong>Start before you feel ready.</strong><span>Choose a two-minute opening move, then decide whether to continue.</span></p></div>
-              <div><span class="guidance-number">03</span><p><strong>Stay within 3–4 priorities.</strong><span>Don't turn every idea into an obligation. Capture first, choose later.</span></p></div>
-            </div>
-          </section>
-
-          <section class="panel review-panel" id="reviews">
+          </section></div>
+        </details>
+        <details class="more-section" id="insights-more">
+          <summary><span><strong>Insights and guidance</strong><small>GPT drafts and ways to get unstuck</small></span><span class="disclosure-chevron">⌄</span></summary>
+          <div class="more-content"><div class="lower-grid"><section class="panel review-panel" id="reviews">
             <div class="panel-head">
               <div><p class="eyebrow">06 / REFLECTION DESK</p><h2>From noise <em>to insight.</em></h2></div>
               <a href="/capture#ai-review-title" class="quiet-link">Full review desk ↗</a>
@@ -158,10 +155,19 @@
               <span>Hourly ChatGPT checks: configured</span>
               <span id="review-updated">Awaiting first saved review</span>
             </div>
-          </section>
-        </div>
+          </section><section class="panel guidance-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">05 / YOUR OPERATING RULES</p><h2>Work with <em>your brain.</em></h2></div>
+            </div>
+            <div class="guidance-list">
+              <div><span class="guidance-number">01</span><p><strong>Make time visible.</strong><span>Set actual deadlines and departure buffers. A time written in a title is not a reminder.</span></p></div>
+              <div><span class="guidance-number">02</span><p><strong>Start before you feel ready.</strong><span>Choose a two-minute opening move, then decide whether to continue.</span></p></div>
+              <div><span class="guidance-number">03</span><p><strong>Stay within 3–4 priorities.</strong><span>Don't turn every idea into an obligation. Capture first, choose later.</span></p></div>
+            </div>
+          </section></div></div>
+        </details>
 
-        <section class="goals-strip" id="goals" aria-label="Your longer-term goals">
+        <section class="goals-strip hidden" id="goals" aria-label="Your longer-term goals">
           <div><p class="eyebrow">THE BIG PICTURE</p><h2>Keep the direction.</h2></div>
           <div id="goal-chips" class="goal-chips"></div>
         </section>
