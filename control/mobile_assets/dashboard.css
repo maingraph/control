@@ -370,3 +370,37 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
   .calendar-panel .month-header h2{font-size:25px}
   .mobile-dock{display:none}
 }
+
+
+/* AI overview is deliberately one quiet line, not another heavy dashboard card. */
+.ai-overview{margin:-1px 0 16px;padding:13px 17px;border-left:3px solid var(--ink);background:var(--panel);border-radius:0 10px 10px 0;min-width:0}
+.overview-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.overview-heading .eyebrow{font-size:9px}
+.overview-meta{color:var(--muted);font-size:10px;white-space:nowrap}
+.overview-text{font-size:13px;font-weight:600;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.overview-question{font-size:11px;color:var(--muted);line-height:1.45;margin:6px 0 0}
+:root[data-theme="dark"] .ai-overview{border-color:#eee;background:#171717}
+.task-edit-link{font-size:11px;padding:0;background:transparent;border:none;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin-top:8px;opacity:.72}
+.task-edit-link:hover{opacity:1}
+.task-draft-cue{display:block;color:var(--muted);font-size:10px;line-height:1.5;margin-top:5px}
+:root[data-theme="dark"] .attention-panel .task-draft-cue{color:#555}
+.task-editor{width:min(470px,calc(100% - 24px));max-height:min(92dvh,780px);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:0 25px 75px #0006}
+.task-editor::backdrop{background:#000b}
+.editor-top{display:flex;align-items:center;justify-content:space-between}
+.editor-close{border:none;background:transparent;font-size:27px;color:var(--ink);padding:0 5px}
+.task-editor h2{font-size:25px;letter-spacing:-.05em;margin:6px 0 16px}
+.task-editor label{display:block;margin:12px 0 5px;font-size:11px;font-weight:760}
+.task-editor input,.task-editor select{width:100%;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:12px 10px;min-height:44px;font-size:14px}
+.editor-source{color:var(--muted);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.editor-suggestion{font-size:12px;background:var(--soft);padding:11px;border-left:2px solid var(--ink);margin:0 0 13px;overflow-wrap:anywhere}
+.editor-hint{font-size:11px;color:var(--muted);line-height:1.5;margin:12px 0}
+.editor-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
+.editor-error{color:#c86666;min-height:14px;font-size:11px}
+@media(max-width:620px){
+ .ai-overview{margin-bottom:12px;padding:12px 14px}
+ .overview-text{font-size:12px}
+ .overview-meta{font-size:9px}
+ .task-editor{padding:21px 19px}
+ .task-editor h2{font-size:23px}
+ .editor-actions .button{flex:1}
+}
