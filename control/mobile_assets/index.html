@@ -18,7 +18,7 @@
 <p class="error" id="login-error" role="alert"></p>
 </div></section>
 <section id="workspace" class="hidden">
-<div class="intro"><div><p class="eyebrow">QUICK CAPTURE</p><h1>Get it out of your head.</h1><p class="sub">No perfect structure needed. Save now, think later.</p></div><a class="chat" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="Open ChatGPT in new tab">ChatGPT ↗</a></div>
+<div class="intro"><div><p class="eyebrow">QUICK CAPTURE</p><h1>Capture now.<br>Sort later.</h1><p class="sub">Thought or task. One place to put it.</p></div><a class="chat" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="Open ChatGPT in new tab">ChatGPT ↗</a></div>
 <div class="layout"><section class="composer panel">
 <div class="tabs" role="tablist" aria-label="Capture type"><button type="button" id="thought-tab" class="active" aria-selected="true">✦ Thought</button><button type="button" id="task-tab" aria-selected="false">☐ Task</button></div>
 <form id="capture-form">
@@ -38,7 +38,9 @@
 <p class="micro" id="ai-review-status" role="status">Scheduled review runs hourly. Analysis requires the ChatGPT connector to be available during that run.</p>
 <div id="ai-review-list" class="itemlist"><p class="empty">No ChatGPT reviews loaded yet.</p></div>
 </section>
-<section class="panel processing-panel">
+<details class="advanced-section" id="advanced-tools">
+<summary><span>More tools</span><small>Local processing · Semantic memory · Connections</small></summary>
+<div class="advanced-content"><section class="panel processing-panel">
 <div class="aside-head"><div><p class="eyebrow">BACKGROUND PROCESSING</p><h2>Control Review Desk <span id="processing-count"></span></h2><p class="sub">Automatic summaries and suggested connections, saved inside Control.</p></div>
 <button type="button" class="textbtn" id="process-refresh">Refresh</button></div>
 <p class="micro" id="processing-state" role="status">Checking local processor…</p>
@@ -50,6 +52,7 @@
 <p id="memory-notice" class="micro" role="status">Embeddings are generated locally on the Control server.</p><div id="memory-results" class="itemlist"></div>
 <div class="aside-head memory-review-head"><div><p class="eyebrow">YOUR APPROVAL MATTERS</p><h2>Suggested connections <span id="link-count"></span></h2></div></div>
 <p class="micro">Similarity is a clue, not a psychological conclusion. Review before confirming.</p><div id="link-list" class="itemlist"></div></section>
+</div></details>
 <div class="footer-note">Original thoughts are kept separately from tasks. Capturing requires an internet connection. <a href="https://github.com/maingraph/control" target="_blank" rel="noopener noreferrer">About Control</a></div>
 </section></main></div>
 <script src="/assets/mobile.js" defer></script>
