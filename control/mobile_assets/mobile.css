@@ -60,3 +60,7 @@ textarea,input,select{background:#111722;color:var(--fg);border:1px solid #39415
 .ai-review-original{white-space:pre-wrap;font-size:14px!important;font-weight:600;margin-bottom:13px!important}
 .ai-review-detail{font-size:13px!important;margin-top:7px!important;color:var(--muted)}
 .ai-review-detail strong{color:var(--fg)}
+
+.inbox-quick-actions{display:flex;justify-content:flex-start;margin:5px 0 17px}
+.inbox-quick-actions button{font-size:13px;white-space:normal;text-align:left}
+.inbox-panel>.micro{margin:14px 0 0;font-size:11px;color:var(--muted)}
