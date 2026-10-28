@@ -62,7 +62,7 @@ function analysisPrompt(captureId=null){
 function handoffToChatGPT(captureId=null){
  const prompt=analysisPrompt(captureId);
  // Open synchronously while this is a real button click, avoiding popup blockers.
- const opened=window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
+ window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
  if(navigator.clipboard&&navigator.clipboard.writeText){
   navigator.clipboard.writeText(prompt).then(()=>{
    setMessage("ChatGPT opened. Paste your copied Control review request there; it does not run automatically.");
@@ -72,7 +72,6 @@ function handoffToChatGPT(captureId=null){
  }else{
   setMessage("Open ChatGPT and ask it to analyze your Control captures via the connector.",true);
  }
- if(!opened)setMessage("Browser may have blocked the new ChatGPT window. Open the ChatGPT link above and paste the request.",true);
 }
 $("analyze-inbox").addEventListener("click",()=>handoffToChatGPT());
 
