@@ -261,3 +261,90 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
   .attention-panel .panel-intro{margin-bottom:17px}
   .hero-aside{min-height:88px}
 }
+
+
+/* Studio Fold edition — a functional adaptation of the supplied Z Fold home-screen reference. */
+:root[data-theme="dark"]{
+  --bg:#080808;--panel:#101010;--ink:#f5f5f3;--muted:#a1a1a0;--line:#303030;
+  --soft:#181818;--black:#050505;--white:#f5f5f3;--button:#f3f3ef;
+  --buttontext:#0b0b0b;--shadow:none
+}
+:root[data-theme="dark"] body{background:#080808}
+:root[data-theme="dark"] .topbar{border-color:#282828}
+:root[data-theme="dark"] .brand-symbol{background:#f3f3ef;color:#080808;border-radius:9px}
+:root[data-theme="dark"] .brand-dot{background:#080808}
+:root[data-theme="dark"] .dashboard-header h1{
+  font-family:Inter,"Arial Black",Arial,sans-serif;font-weight:900;letter-spacing:-.09em;
+  color:#f8f8f6
+}
+:root[data-theme="dark"] .dashboard-header h1 em{
+  font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;
+  letter-spacing:-.075em;color:#f8f8f6
+}
+:root[data-theme="dark"] .hero-aside{background:#111;color:#f8f8f6;border:1px solid #3e3e3e}
+:root[data-theme="dark"] .hero-day-tag{color:#efefed}
+:root[data-theme="dark"] .secondary-stats .stat-number{font-variant-numeric:tabular-nums}
+:root[data-theme="dark"] .attention-panel{
+  background:#f3f3ef;color:#101010;border:0;box-shadow:none
+}
+:root[data-theme="dark"] .attention-panel .eyebrow,
+:root[data-theme="dark"] .attention-panel .panel-intro,
+:root[data-theme="dark"] .attention-panel .task-meta,
+:root[data-theme="dark"] .attention-panel .task-heading small{color:#575757}
+:root[data-theme="dark"] .attention-panel .task-card,
+:root[data-theme="dark"] .attention-panel .task-card.warning{
+  background:#fff;color:#111;border-color:#deded9
+}
+:root[data-theme="dark"] .attention-panel .done-button{border-color:#111;color:#111}
+:root[data-theme="dark"] .attention-panel .done-button:hover{color:#fff;background:#111}
+:root[data-theme="dark"] .attention-panel .pill{border-color:#d0d0cc;color:#111}
+:root[data-theme="dark"] .attention-panel .pill.alert{background:#141414;color:white}
+:root[data-theme="dark"] .attention-panel .task-heading,
+:root[data-theme="dark"] .attention-panel .secondary-heading{border-color:#deded9}
+:root[data-theme="dark"] .attention-panel .subtle-button{
+  color:#111;border-color:#d4d4cf;background:#f6f6f3
+}
+:root[data-theme="dark"] .attention-panel .empty{color:#555;background:#f6f6f2;border-color:#dcdcd6}
+:root[data-theme="dark"] .attention-panel .quiet-link{border-color:#aaa;color:#111}
+:root[data-theme="dark"] .calendar-panel{background:#121212;border:1px solid #303030}
+:root[data-theme="dark"] .capture-ribbon{background:#e9e9e5;color:#111}
+:root[data-theme="dark"] .capture-ribbon .eyebrow{color:#555}
+:root[data-theme="dark"] .capture-ribbon .button-dark{background:#111;color:#fff;border-color:#111}
+:root[data-theme="dark"] .more-section{border-color:#303030}
+:root[data-theme="dark"] .mobile-dock{background:#121212;border-color:#424242;box-shadow:0 15px 35px #000a}
+:root[data-theme="dark"] .mobile-dock a{color:#bdbdbb}
+:root[data-theme="dark"] .mobile-dock a[aria-current]{color:#fff}
+:root[data-theme="dark"] .mobile-dock .dock-capture{background:#f3f3ef;color:#080808}
+:root[data-theme="dark"] .mobile-dock .dock-capture span{font-weight:500}
+.day-summary{font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase;margin:9px 0 0}
+:root[data-theme="dark"] .day-summary{color:#ddd}
+@media (min-width:871px){
+  :root[data-theme="dark"] .dashboard-header{position:relative;isolation:isolate;overflow:hidden;padding:18px 0 14px}
+  :root[data-theme="dark"] .dashboard-header:before{
+    content:"CONTROL";position:absolute;z-index:-1;right:5%;bottom:-.13em;
+    font-size:clamp(100px,15vw,260px);line-height:1;letter-spacing:-.09em;font-weight:900;
+    color:#ffffff09;pointer-events:none
+  }
+}
+@media (max-width:620px){
+  :root[data-theme="dark"] .topbar{margin-bottom:14px}
+  :root[data-theme="dark"] .hero-aside{background:#161616}
+  .dashboard-header{gap:15px;margin-bottom:17px}
+  .dashboard-header h1{font-size:clamp(42px,12vw,61px);margin:7px 0}
+  .dashboard-header .subline{font-size:12px}
+  .day-summary{font-size:10px;margin-top:10px}
+  .secondary-stats{display:none}
+  .attention-panel{padding:21px 18px}
+  .attention-panel .panel-intro{font-size:11px;line-height:1.45}
+  .attention-panel h2{font-size:33px}
+  .attention-panel .task-title{font-size:13px}
+  .attention-panel .task-card{padding:14px 12px}
+  .calendar-panel{margin-top:0}
+  .more-section summary{padding:18px 9px}
+  .mobile-dock{backdrop-filter:blur(18px)}
+}
+@media(max-width:350px){
+  .hero-aside{padding:14px 15px;min-height:75px}
+  .hero-clock{font-size:24px}
+  .dashboard-header h1{font-size:43px}
+}
