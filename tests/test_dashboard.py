@@ -64,7 +64,7 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('@media(min-width:691px) and (max-width:870px)',responsive_css)
         dashboard_js=self.client.get("/assets/dashboard.js").text
         self.assertIn('display("urgent-section",urgent.length>0)',dashboard_js)
-        self.assertIn('display("undated-section",suggested.length>0)',dashboard_js)
+        self.assertIn('display("undated-section",topRemaining.length>0)',dashboard_js)
         self.assertIn('control_theme_studio',dashboard_js)
         self.assertIn('function renderOverview()',dashboard_js)
         self.assertIn('function renderHero()',dashboard_js)
