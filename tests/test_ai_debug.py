@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 from fastapi.testclient import TestClient
-from control import db, context, memory
+from control import db, context, memory, inbox
 from control.api import create_app
 from control.models import TaskCreate
 
@@ -13,7 +13,7 @@ class DebugTimelineTests(unittest.TestCase):
         self.old={k:os.environ.get(k) for k in ("CONTROL_DB_PATH","CONTROL_API_KEY","CONTROL_CONTEXT_SEED")}
         os.environ.update({"CONTROL_DB_PATH":self.folder.name+"/control.sqlite3",
                            "CONTROL_API_KEY":"t"*48,"CONTROL_CONTEXT_SEED":"{}"})
-        db.init();context.ensure();memory.init()
+        db.init();context.ensure();inbox.init();memory.init()
         self.client=TestClient(create_app(),base_url="https://testserver")
     def tearDown(self):
         self.client.close()
