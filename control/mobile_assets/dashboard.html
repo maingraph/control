@@ -20,7 +20,7 @@
       <nav class="topnav" aria-label="Main navigation">
         <a href="/app" aria-current="page">Overview</a>
         <a href="/capture?mode=thought">Capture</a>
-        <a href="#calendar-panel">Calendar</a>
+        <a href="#calendar-panel">Calendar</a><a href="#debug-page" id="debug-top-link">Debug</a>
       </nav>
       <div class="top-actions">
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch color theme" title="Switch color theme">◐</button>
@@ -207,12 +207,20 @@
           <div id="goal-chips" class="goal-chips"></div>
         </section>
 
-        <div id="global-status" class="global-status" role="status"></div>
+        <section id="debug-page" class="debug-page hidden" aria-label="GPT activity and semantic changes">
+  <div class="panel-head"><div><p class="eyebrow">CONTROL / DEBUG</p><h2>GPT <em>activity.</em></h2></div><button type="button" class="subtle-button" id="debug-refresh">Refresh ↻</button></div>
+  <p class="panel-intro">Every saved GPT update, newest first. Expand an entry to see what changed in the semantic core. Existing records before logging began are snapshots, not reconstructed history.</p>
+  <p id="debug-status" class="overview-meta" role="status"></p>
+  <div id="debug-events" class="debug-events"></div>
+  <button type="button" id="debug-more" class="subtle-button hidden">Load older updates</button>
+</section>
+<div id="global-status" class="global-status" role="status"></div>
         <nav class="mobile-dock" aria-label="Quick navigation">
           <a href="/app" aria-current="page"><span aria-hidden="true">⌂</span><small>Home</small></a>
           <a href="#attention"><span aria-hidden="true">☑</span><small>Tasks</small></a>
           <a class="dock-capture" href="/capture?mode=thought"><span aria-hidden="true">＋</span><small>Capture</small></a>
           <a href="#calendar-panel"><span aria-hidden="true">▦</span><small>Calendar</small></a>
+          <a href="#debug-page" id="debug-dock-link"><span aria-hidden="true">⌁</span><small>Debug</small></a>
         </nav>
         <footer><span>CONTROL <span class="foot-bullet">◦</span> YOUR SOURCE OF TRUTH</span><span>Tasks &amp; thoughts sync across devices. No automatic reminders yet.</span></footer>
       </section>

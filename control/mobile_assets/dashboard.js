@@ -33,6 +33,7 @@ function unlockView(){
  $("access").value="";
  renderClock();
  loadDashboard();
+ syncDebugRoute();
 }
 function renderClock(){
  const d=now();
@@ -374,6 +375,7 @@ async function loadDashboard(){
    .catch(()=>{});
  renderTasks();renderThoughts();renderCalendar();renderGoals();renderAnalyses();restoreDayPlan();
  renderOverview();renderHero();
+ if(location.hash==="#debug-page"&&!$("debug-page").classList.contains("hidden"))loadDebug(true);
  message(failures.length?"Some Control data is temporarily unavailable: "+failures.join(", "):"");
 }
 function setTheme(theme){
@@ -471,6 +473,73 @@ setInterval(renderClock,30000);
 const givenMode=new URLSearchParams(location.search).get("mode");
 if(givenMode==="task"||givenMode==="thought"){location.replace("/capture?mode="+givenMode);}
 else{api("/mobile/me").then(unlockView).catch(lockView);}
+
+
+/* Debug timeline: private, text-only, read-only; no HTML from stored user text. */
+let debugCursor=null,debugLoading=false;
+function debugShow(active){
+ $("debug-page").classList.toggle("hidden",!active);
+ [...$("dashboard").children].forEach(child=>{
+  if(child.id==="debug-page"||child.id==="global-status"||child.tagName==="NAV"||child.tagName==="FOOTER")return;
+  child.classList.toggle("hidden",active);
+ });
+ $("debug-dock-link").setAttribute("aria-current",active?"page":"false");
+ if(active)loadDebug(true);
+}
+function debugText(value){
+ if(typeof value!=="string")return value==null?"":JSON.stringify(value);
+ try{const o=JSON.parse(value);return typeof o==="string"?o:JSON.stringify(o,null,2);}catch{return value;}
+}
+function appendDebugEvent(ev){
+ const article=element("article","debug-entry");
+ const title=element("div","debug-entry-head");
+ title.append(element("strong",null,ev.key.replaceAll("_"," ")));
+ const t=new Date(ev.created_at);title.append(element("small",null,Number.isNaN(+t)?ev.created_at:t.toLocaleString()));
+ article.append(title);
+ const data=(()=>{try{return JSON.parse(ev.after_value);}catch{return {};}})();
+ const useful=data.buddy_message||data.headline||data.insight||data.tentative_interpretation||data.observation||data.proposed_title||data.next_step;
+ article.append(element("p","debug-advice",typeof useful==="string"?useful:ev.kind==="existing"?"Existing snapshot":"Saved AI draft"));
+ if(ev.kind==="existing")article.append(element("small",null,"Pre-history snapshot · original changes unavailable"));
+ if(ev.before_value!==null&&ev.before_value!==ev.after_value){
+  const prior=(()=>{try{return JSON.parse(ev.before_value);}catch{return {};}})();
+  const previous=prior.buddy_message||prior.headline||prior.insight||prior.proposed_title;
+  if(typeof previous==="string")article.append(element("p","debug-previous","Previously: "+previous));
+ }
+ const details=element("details","debug-delta");
+ const summary=element("summary",null,"Semantic core changes ▾");
+ details.append(summary);
+ const delta=ev.semantic_delta||{},counts=delta.counts||{};
+ const count=(counts.nodes_added||0)+(counts.nodes_changed||0)+(counts.nodes_removed||0)+(counts.links_added||0)+(counts.links_changed||0)+(counts.links_removed||0);
+ details.append(element("p","debug-delta-count",count?count+" graph change(s) recorded":"No graph changes observed in this interval"));
+ for(const name of ["nodes","links"]){
+  for(const item of (Array.isArray(delta[name])?delta[name]:[])){
+   details.append(element("p","debug-change",item.change+" · "+(item.kind||item.relation||name)+" · "+item.id+" · "+(item.status||"")));
+  }
+ }
+ const raw=element("details","debug-raw");raw.append(element("summary",null,"View saved update data"));
+ raw.append(element("pre",null,debugText(ev.after_value)));details.append(raw);article.append(details);
+ $("debug-events").append(article);
+}
+async function loadDebug(reset=false){
+ if(debugLoading||!state.unlocked)return;
+ debugLoading=true;
+ if(reset){debugCursor=null;$("debug-events").replaceChildren();}
+ $("debug-status").textContent="Loading GPT writes…";
+ try{
+  const query="/mobile/ai-updates?limit=20"+(debugCursor?"&before_id="+debugCursor:"");
+  const result=await api(query);
+  for(const ev of result.updates||[])appendDebugEvent(ev);
+  if(reset&&!(result.updates||[]).length)$("debug-events").append(element("p","empty","No saved AI updates yet."));
+  debugCursor=result.next_before_id;
+  display("debug-more",!!result.has_more);
+  $("debug-status").textContent="Saved history · "+$("debug-events").children.length+" entries loaded";
+ }catch(err){$("debug-status").textContent="Could not load history: "+errorMessage(err);}
+ finally{debugLoading=false;}
+}
+$("debug-refresh").addEventListener("click",()=>loadDebug(true));
+$("debug-more").addEventListener("click",()=>loadDebug(false));
+function syncDebugRoute(){debugShow(location.hash==="#debug-page");}
+window.addEventListener("hashchange",syncDebugRoute);
 
 let _lastRefresh=Date.now();
 function refreshIfNeeded(){

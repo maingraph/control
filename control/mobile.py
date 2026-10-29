@@ -205,6 +205,12 @@ def report_device_timezone(body:DeviceTimezone):
         raise HTTPException(422,"Unknown IANA timezone")
     return context.set_context("device_timezone",body.timezone)
 
+@router.get("/mobile/ai-updates",dependencies=[Depends(authorized)])
+def ai_updates(limit:int=20,before_id:int|None=None):
+    from . import context
+    try:return context.list_ai_updates(limit,before_id)
+    except ValueError as exc:raise HTTPException(422,str(exc))
+
 @router.get("/mobile/context",dependencies=[Depends(authorized)])
 def planning_context():
     from . import context

@@ -432,3 +432,23 @@ footer{border-top:1px solid var(--line);padding:24px 0 32px;display:flex;justify
  .dashboard-header h1{overflow-wrap:normal}
  .dashboard-header h1 em{font-size:.9em}
 }
+
+
+/* Read-only GPT activity timeline */
+.debug-page{max-width:850px;margin:0 auto 28px;min-height:60vh;padding:22px 0 30px}
+.debug-page .panel-head{align-items:center;display:flex;justify-content:space-between;gap:12px}
+.debug-page h2{font-size:clamp(30px,5vw,48px);letter-spacing:-.05em;margin:7px 0 12px}
+.debug-events{display:grid;gap:12px;margin:17px 0}
+.debug-entry{background:var(--panel);border:1px solid var(--line);padding:18px;border-radius:16px;overflow-wrap:anywhere}
+.debug-entry-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.debug-entry-head strong{font-size:12px;text-transform:capitalize}
+.debug-entry-head small,.debug-previous,.debug-delta-count{font-size:11px;color:var(--muted)}
+.debug-advice{margin:12px 0;line-height:1.6;font-size:14px;white-space:pre-wrap}
+.debug-previous{border-left:2px solid var(--line);padding-left:10px;margin:10px 0}
+.debug-delta{border-top:1px solid var(--line);margin-top:14px;padding-top:10px}
+.debug-delta summary,.debug-raw summary{cursor:pointer;font-size:12px;font-weight:700}
+.debug-delta-count{margin:9px 0}
+.debug-change{font-size:11px;line-height:1.5;margin:7px 0;overflow-wrap:anywhere}
+.debug-raw{margin:12px 0 3px}
+.debug-raw pre{font-size:10px;white-space:pre-wrap;word-break:break-word;max-height:250px;overflow:auto;padding:12px;background:var(--soft);border-radius:9px}
+@media(max-width:620px){.debug-page{padding:6px 0 110px}.debug-entry{padding:15px}.debug-entry-head{flex-direction:column;gap:4px}.debug-advice{font-size:13px}.mobile-dock a{min-width:0}}
